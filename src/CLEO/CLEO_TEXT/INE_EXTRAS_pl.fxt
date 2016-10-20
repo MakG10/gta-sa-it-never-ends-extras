@@ -1,0 +1,127 @@
+ME1T1 Porwanie
+ME1T2 Jedz na Grove Street i przywiez tego czarnucha.
+ME1T3 Przywiez go zywego.
+ME1T4 Szukam Sweeta. Gdzie go znajde?
+ME1T5 Jest za domem.
+ME1T6 Czego chcesz?
+ME1T7 Idziesz ze mna, czarnuchu.
+ME1T8 Dobra, jedziemy. Spotkamy sie na miejscu ze Stevem.
+ME1T9 Gdzie ty sie kurwa wybierasz?
+ME1TA Dobra, zaraz wywolamy to zdjecie i podrzucimy je Carlowi.
+ME1TB Nie wiem, nie znam sie, nie orientuje sie - zarobiony jestem.
+ME1TC Panie, idz pan w chuj.
+ME1I1 ~s~Twoim zadaniem jest porwanie Sweeta. Jedz na ~y~Grove Street~s~.
+ME1I2 ~s~Sweet jest gdzies na Grove Street. Znajdz go.
+ME1I3 ~s~Zabij ~r~czlonkow gangu Grove Street~s~, a ~b~Sweeta ~s~pozostaw zywego.
+ME1I4 ~s~Wyceluj w ~b~Sweeta~w~.
+ME1I5 ~s~Poczekaj na vana.
+ME1I6 ~s~Znajdz Sweeta.
+ME1I7 ~s~Wroc na ~y~Grove Street~s~!
+ME1I8 ~s~Wroc do ~b~samochodu~s~!
+ME1I9 Mozesz zapytac sie o Sweeta ktoregos z tych gangsterow, moze oni wiedza gdzie jest.
+ME1IA ~s~Idz za Sweetem, az ten wejdzie do samochodu.
+ME1IB ~s~Jedz za ~b~vanem ~s~z powrotem do ~y~kryjowki~s~.
+ME1IC ~s~Zrob zdjecie Sweeta.
+ME1ID Jesli chcesz zyskac nieco czasu na obrone przed GSF, mozesz przewrocic Sweeta podchodzac do niego z bronia, celujac i wciskajac ~k~~PED_FIREWEAPON~.
+ME1IE ~s~Twoi kompani maja klopoty, pomoz im w walce!
+ME1IF Paski po prawej stronie pokazuja stan zycia twoich kompanow - miej na nie oko!
+ME1J1 ~s~Zabij czlonkow gangu Grove Street, a ~b~Sweeta ~s~pozostaw zywego.
+ME1J2 ~s~Pomoz sobie w walce, zbierajac upuszczona ~g~bron~s~.
+ME1F1 ~r~Sweet nie zyje!
+ME1F2 ~r~Sweet uciekl!
+ME1F3 ~r~Jeden z ludzi Degorio nie zyje!
+ME1F4 Mielismy przywiezc go zywego, pamietasz?
+ME1F5 ...kurwa.
+ME1F6 ~r~Nie masz juz czym zrobic zdjecia Sweetowi!
+ME1S1 Mafioso 1
+ME1S2 Mafioso 2
+
+ME2T1 Da Nang Cioty
+ME2T2 Znowu mamy problem z Da Nang Boys.
+ME2T3 Co te cioty znowu zrobily?
+ME2T4 Jakis chinol z ekipa, nie pamietam jego imienia, napadli na nasz sklad z bronia.
+ME2T5 Krotko mowiac, sto sztuk M4 poszlo sie jebac, a czterech naszych ludzi nie zyje.
+ME2T6 Dostalem cynk, ze ten chinol bedzie bral udzial w wyscigu gdzies w Willowfield.
+ME2T7 Steve poda ci szczegoly, czeka na ciebie przy Ring Donuts.
+ME2T8 A co z tym czarnuchem?
+ME2T9 Na razie zostaje, Carl przyda sie do zalatwienia spraw z Da Nang Boys, a potem wywiezie sie go gdzies w pizdu...
+ME2T10 Dobra, sprawa wyglada tak - masz zlikwidowac typa, ktory napadl na nasz sklad broni.
+ME2T11 Bedzie bral udzial w dzisiejszym wyscigu w Willowfield, tylko nie wiemy gdzie dokladnie.
+ME2T12 Zacznij od zdobycia sobie przepustki na wyscig - samochodu jednego z rajdowcow. Ma sie spotkac z jakimis typami z Da Nang tu niedaleko, przy sasiedniej ulicy.
+ME2T13 Zaczaj sie tam i zaczekaj na rajdowca - szary Buffalo. Zabij kolesi z Da Nang, a od rajdowca wyciagnij informacje o miejscu startu.
+ME2T14 Z tego co wiemy, wyscig jest podzielony na etapy - nie wszyscy startuja jednoczesnie. Cel bedzie w drugiej fali, a rajdowiec, ktoremy podpierdolisz woz bedzie w pierwszej.
+ME2T15 Takze obczaj trase, a pozniej dostaniesz cynk w jakim wozie jest cel.
+ME2T16 Masz tu ladunki, podloz je gdzies na trasie i wysadz tego skurwysyna.
+ME2T17 Nie ruszac sie!
+ME2T18 Co jest kurwa?
+ME2T19 Kradziony woz...
+ME2T20 Jak to kurwa kra...
+ME2T21 Zapnij pasy.
+ME2T22 Zgubie psy. Lec po samochod.
+ME2T23 Gdzie ma sie odbyc wyscig?
+ME2T24 Jaki wyscig?
+ME2T25 GDZIE MA BYC WYSCIG?!
+ME2T26 W Willowfield przy kontenerach, prosze nie zabijaj mnie!
+ME2T27 Cel za chwile startuje w wyscigu, pospiesz sie z tymi ladunkami! Czerwony Buffalo, nie spierdol tego.
+
+ME2I2 Podjedz pod ~y~garaz~w~ Billa Degorio.
+ME2I3 Wejdz do garazu.
+ME2I4 Wyjdz z garazu.
+ME2I5 Spotkaj sie ze Stevem na parkingu przy ~y~Ring Donuts~w~.
+ME2I6 Wejdz do ~b~samochodu~w~.
+ME2I7 Idz do ~y~miejsca spotkania~w~.
+ME2I8 Da Nang Boys juz tu sa i czekaja na rajdowca.
+ME2I9 Znajdz droge na dach i zajmij odpowiednia pozycje.
+ME2I10 Nie daj sie zauwazyc przez Da Nang Boys, zeby nie sploszyc rajdowca. Zachowaj dystans od krawedzi dachu.
+ME2I11 Podnies ~g~palete~w~.
+ME2I12 Poloz palete we wskazanym miejscu.
+ME2I13 Zabij ~r~Da Nang Boys~w~ i przesluchaj ~b~rajdowca~w~.
+ME2I14 Podejdz do ~b~rajdowca~w~.
+ME2I15 Postrzel ~b~rajdowca~w~, ale nie zabijaj go.
+ME2I16 Podejmij decyzje, ~b~odjedz samochodem~w~ lub ~r~zabij rajdowca~w~.
+ME2I17 Jedz na ~y~miejsce startu~w~.
+ME2I18 Nie zgub rajdowcow i zapamietaj trase wyscigu.
+ME2I19 Podloz ladunki wybuchowe na trasie przynajmniej 150 m od startu.
+ME2I20 W ekwipunku masz ladunki wybuchowe, podloz je na trasie i wysadz cel przed koncem wyscigu.
+ME2I21 Wejdz do ~b~samochodu~w~.
+ME2I22 Wroc do ~b~samochodu~w~!
+
+ME2F1 Zostales zauwazony przez Da Nang Boys.
+ME2F2 Rajdowiec nie zyje.
+ME2F3 Samochod rajdowca zostal zniszczony.
+ME2F4 Zaatakowales Da Nang Boys i zawody zostaly odwolane.
+ME2F5 Zgubiles rajdowcow.
+ME2F6 Koniec wyscigu.
+
+
+ME3T1 Odbierz to!
+ME3T2 ...
+ME3T3 Czarnuch odstawi szmal niedaleko garazu Degorio. Podjedz tam.
+ME3T4 //Nie da rady, Da Nang Boys znowu szaleja, wlasnie obczajamy...
+ME3T5 Dobra, nie obdchodzi mnie to. Sam tam pojade.
+ME3T6 Ale najpierw...
+ME3T7 Tam jest!
+ME3T8 Torba na ziemie, tylko bez wyglupow.
+ME3T9 Wlasnie tak, lamusie.
+ME3T10 Popelniacie duzy blad.
+ME3T11 Zamknij ryj, smieciu. To ty popelniles blad wchodzac na nasza dzielnice.
+ME3T12 To przyjemnosc robic z toba interesy.
+ME3T13 Jedna torba z pieniedzmi przepadla. Jedz do garazu przy autostradzie po pozostale dwie.
+ME3T14 Ja juz pierdole, nie jade tam.
+ME3T15 Co jest...
+ME3T16 Dziekujemy za zainteresowanie sie naszym dodatkiem, bedziemy wdzieczni, jezeli podzielice sie z nami opinia i wrazeniami na forum www.gta-mods.pl
+
+ME3I1 Zabij rannego ~r~Vagos~w~.
+ME3I2 Podnies ~b~karabin snajperski~w~.
+ME3I3 Z hotelu Jefferson przed toba zaraz wyjdzie Da Nang Boy. Przygotuj sie do strzalu.
+ME3I4 Zabij ~r~cel~w~.
+ME3I5 Podazaj za ~r~sferami~w~, aby uciec z dachu. Nie spadnij!
+ME3I6 Jedz do ~y~garazu~w~.
+ME3I7 Nacisnij F, aby polozyc torbe na ziemi.
+ME3I8 Scigaj ~b~Vagosow~w~!
+ME3I9 Uwazaj na beczki!
+ME3I10 Wyskocz z samochodu! (~k~~VEHICLE_ENTER_EXIT~)
+ME3I11 Zabij uciekajacego ~r~Vagosa~w~.
+ME3I12 Ucieknij policji przejezdzajac przez ~r~sfery~w~.
+
+ME3F1 Zgubiles Vagosow.

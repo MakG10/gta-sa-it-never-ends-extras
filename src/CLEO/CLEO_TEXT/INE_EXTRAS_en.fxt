@@ -1,0 +1,127 @@
+ME1T1 The Kidnapping
+ME1T2 Go on Grove Street and bring that nigger here.
+ME1T3 Bring him alive.
+ME1T4 I'm looking for Sweet. Where is he?
+ME1T5 He's at his backyard.
+ME1T6 What do you want?
+ME1T7 You're coming with me, negro.
+ME1T8 Alright, let's go. We'll meet Steve on Grove Street.
+ME1T9 Where the fuck do you think you're going?
+ME1TA Alright, we'll print the photo and place it for Carl.
+ME1TB I don't know, I don't know anything, I really don't - I've got a lot to do.
+ME1TC Dude, get the fuck outta here.
+ME1I1 ~s~Your task is to kidnap Sweet. Go on ~y~Grove Street~s~.
+ME1I2 ~s~Sweet is somewhere on GroveStreet. Find him.
+ME1I3 ~s~Kill ~r~Grove Street members~s~ and keep ~b~Sweet ~s~alive.
+ME1I4 ~s~Aim at ~b~Sweet~w~.
+ME1I5 ~s~Wait for the van.
+ME1I6 ~s~Find Sweet.
+ME1I7 ~s~Go back on ~y~Grove Street~s~!
+ME1I8 ~s~Go back to the ~b~car~s~!
+ME1I9 You can ask one of the Grove Street members about Sweet, maybe they know where he is.
+ME1IA ~s~Follow Sweet until he gets into the van.
+ME1IB ~s~Follow the ~b~van ~s~back to the ~y~hideout~s~.
+ME1IC ~s~Take a picture of Sweet.
+ME1ID If you want to gain some time for killing GSF, you can knock Sweet down on the ground by approaching him with the gun, aiming at him an pressing ~k~~PED_FIREWEAPON~.
+ME1IE ~s~Your fellas are in trouble, help them!
+ME1IF The bars on the right indicate the health of your fellas - keep an eye on them!
+ME1J1 ~s~Kill ~r~Grove Street members~s~ and keep ~b~Sweet ~s~alive.
+ME1J2 ~s~Help yourself in the fight by picking up dropped ~g~weapons~s~.
+ME1F1 ~r~Sweet is dead!
+ME1F2 ~r~Sweet escaped!
+ME1F3 ~r~One of Degorio's men is dead!
+ME1F4 We were supposed to bring him alive, remember?
+ME1F5 ...fuck.
+ME1F6 ~r~You've run out of film for the camera!
+ME1S1 Mafioso 1
+ME1S2 Mafioso 2
+
+ME2T1 Da Nang Fags
+ME2T2 We've got issues with Da Nang Boys again.
+ME2T3 What did those fags do this time?
+ME2T4 Some chinese guy with his crew, I can't remember his name, stole our weapon supplies.
+ME2T5 One hundred M4s is fucking gone and four of our people are dead.
+ME2T6 That fucking chinese guy will be taking part in a race somewhere in Willowfield.
+ME2T7 Steve will give you the details, he's waiting for you at Ring Donuts.
+ME2T8 What about this nigger?
+ME2T9 He stays here for now, Carl will be useful to us with Da Nang Boys. After that, we'll drive him to the fucking woods or something.
+ME2T10 Alright, you're supposed to eliminate that fucker who stole our weapons.
+ME2T11 He will be racing today in Willowfield, but we don't know where exactly.
+ME2T12 Start with getting a pass for the race - a car of one of the racers. He is supposed to meet some guys from Da Nang one block from here.
+ME2T13 Sneak out for him there, the car you need is a grey Buffalo. Kill all Da Nang Boys in the meeting and get the location from the racer.
+ME2T14 As far as we know, the race is split into phases - not everyone starts at once. The target will be in the second wave, and the guy you're about to steal the car from - in the second one.
+ME2T15 So memorize the track and you'll get a phonecall from us with description of they target's car.
+ME2T16 Take these chargers, plant them somewhere on the track and blow that motherfucker up.
+ME2T17 Don't move!
+ME2T18 What the fuck?
+ME2T19 This car is stolen...
+ME2T20 What the fuck you're...
+ME2T21 Hang on.
+ME2T22 I'll loose the cops. Go get the car.
+ME2T23 The race - where is taking place?
+ME2T24 What race?
+ME2T25 WHERE THE FUCK IS THE RACE?!
+ME2T26 In the Willowfield, near the containers, please don't kill me!
+ME2T27 The target is about to start the race, hurry up with those chargers! It's red Buffalo, don't fuck it up!
+
+ME2I2 Get to the Bill Degorio's ~y~garage~w~.
+ME2I3 Get into the garage.
+ME2I4 Exit the garage.
+ME2I5 Meet Steve at the parking lot near ~y~Ring Donuts~w~.
+ME2I6 Get into the ~b~car~w~.
+ME2I7 Go to the ~y~meeting~w~.
+ME2I8 Da Nang Boys are already here, waiting for the racer.
+ME2I9 Find a way to the roof and take position.
+ME2I10 Don't let Da Nang Boys see you, because the racer won't show. Keep your distance from the roof's edge.
+ME2I11 Pick up ~g~palette~w~.
+ME2I12 Put the pallet in the marked spot.
+ME2I13 Kill ~r~Da Nang Boys~w~ and interrogate the ~b~racer~w~.
+ME2I14 Approach the ~b~racer~w~.
+ME2I15 Shoot the ~b~racer~w~, but don't kill him.
+ME2I16 Make a decision, ~b~leave with the car~w~ or ~r~kill the racer~w~.
+ME2I17 Go to the ~y~race~w~.
+ME2I18 Don't loose the racers and memorize the track.
+ME2I19 Plant the explosives on the track at least 150m from the start line.
+ME2I20 You've got explosives, plant them on the track and blow up the target before the race is over.
+ME2I21 Get into the ~b~car~w~.
+ME2I22 Get back to the ~b~car~w~!
+
+ME2F1 You have been spotted by Da Nang Boys.
+ME2F2 Racer is dead.
+ME2F3 Racer's car has ben destroyed.
+ME2F4 You attacked Da Nang Boys and the race has been called off.
+ME2F5 You lost the racers.
+ME2F6 Race is over.
+
+
+ME3T1 Take it back!
+ME3T2 ...
+ME3T3 The nigger will drop the money bags near Degorio's garage. Get over there.
+ME3T4 //Can't do it man, Da Nang Boys are going wild, we're about to...
+ME3T5 Alright, I don't care. I'll get them myself.
+ME3T6 But first...
+ME3T7 He's on the roof!
+ME3T8 Bag on the ground, no fucking tricks.
+ME3T9 That's right, fucker.
+ME3T10 You're making a big mistake.
+ME3T11 Shut the fuck up you piece of shit. You've made a big mistake coming to our neighborhood.
+ME3T12 Pleasure doing bussiness with you.
+ME3T13 One money bag is gone. Get to the garage under the highway for the other two.
+ME3T14 I'm fucking done for today.
+ME3T15 What the f...
+ME3T16 Thank you for taking interest in our addon, you can find more mods on www.gta-mods.pl. The mods for GTA V will be available on www.gta5mods.pl
+
+ME3I1 Finish off a ~r~Vagos~w~.
+ME3I2 Pick up the ~b~sniper rifle~w~.
+ME3I3 Da Nang Boy is about to leave the Jefferson hotel in front of you. Get ready to shoot him.
+ME3I4 Kill the ~r~target~w~.
+ME3I5 Follow the ~r~spheres~w~ to escape. Don't fall off!
+ME3I6 Go to the ~y~garage~w~.
+ME3I7 Press F to put the bag on the ground.
+ME3I8 Go after ~b~Vagosow~w~!
+ME3I9 Watch out for the barrels!
+ME3I10 Jump out of the car! (~k~~VEHICLE_ENTER_EXIT~)
+ME3I11 Kill the running ~r~Vagos~w~.
+ME3I12 Escape the police chase by driving through ~r~spheres~w~.
+
+ME3F1 You lost Vagos.

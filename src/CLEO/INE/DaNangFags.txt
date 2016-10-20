@@ -1,0 +1,2347 @@
+{$CLEO .cm}
+:Mission
+gosub @NewPlayerInit
+0050:  gosub  @Mission_Start  
+if 
+  0112:  wasted_or_busted  // mission only  
+then
+  0050:  gosub  @Mission_Failed  
+end
+0050:  gosub  @Mission_Cleanup
+end_thread
+
+
+:Mission_Start
+thread  'DaNanFag'
+$ONMISSION = 1
+
+0A48: enable_menu_access_in_widescreen_mode 1 
+0860: link_actor $PLAYER_ACTOR to_interior 0
+select_interior 0
+
+03CB: set_rendering_origin_at 1459.69995 -1498.69995 13.3
+
+fade 0 1000
+gosub @Fading
+
+04ED: load_animation "INE"
+04ED: load_animation "ON_LOOKERS"
+023C: load_special_actor 'SWEET' as 1
+0247: load_model 166
+0247: load_model 125
+0247: load_model 124
+0247: load_model 123
+0247: load_model 121
+0247: load_model 122
+0247: load_model 206
+0247: load_model 280
+0247: load_model 347
+0247: load_model 348
+0247: load_model 355
+0247: load_model 356
+0247: load_model 363
+0247: load_model 562
+0247: load_model 596
+0247: load_model 402
+0247: load_model 405
+0247: load_model 1721
+0247: load_model 330
+0247: load_model #AK47
+0247: load_model #ROCKETLA
+0247: load_model #CELLPHONE
+0247: load_model 414
+038B: load_requested_models
+
+07C0: load_path 903
+07C0: load_path 904
+07C0: load_path 905
+07C0: load_path 906
+
+03CF: load_wav 23000 as 1
+
+0A48: enable_menu_access_in_widescreen_mode 1 
+
+
+// ======== Zmiana skina gracza ========
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to 125
+070D: rebuild_player $PLAYER_CHAR
+
+gosub @SavePlayerState
+
+01B2: give_actor $PLAYER_ACTOR weapon 23 ammo 99999
+//
+
+
+// ======== Scenka #1 - gracz podjezdza pod garaz ========
+fade 1 1000
+
+0860: link_actor $PLAYER_ACTOR to_interior 0
+select_interior 0
+//01B4: set_player $PLAYER_CHAR can_move 1 // tmp
+//jump @Task6 // tmp
+
+00A5: 9@ = create_car 562 at 1459.69995 -1498.69995 14.0 // player_car
+0175: set_car 9@ Z_angle_to 272.0
+0229: set_car 9@ primary_color_to 0 secondary_color_to 0
+
+036A: put_actor $PLAYER_ACTOR in_car 9@
+
+04BA: set_car 9@ speed_to 25.0
+
+
+
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+
+00BC: show_text_highpriority GXT 'ME2I2' time 4000 flag 1
+//
+
+
+// ========= Zadanie #1.1 - Wejscie do garazu =========
+
+018A: 100@ = create_checkpoint_at 1577.09998 -1474.69995 13.5
+
+while true
+    wait 0
+    if
+        00ED:   actor $PLAYER_ACTOR 1 near_point 1577.09998 -1474.69995 radius 1.0 1.0 on_foot 
+    then
+        0164: disable_marker 100@
+        break
+    end
+end
+
+01B4: set_player $PLAYER_CHAR can_move 0
+
+// Sztuczna kolizja w garazu
+0107: 43@ = create_object #LAESPRAYDOOR1 at 603.75 -7.75 1000.3
+0107: 44@ = create_object #LAESPRAYDOOR1 at 603.75 -12.25 1000.3
+0177: set_object 43@ Z_angle_to 180.0
+0177: set_object 44@ Z_angle_to 180.0
+0750: set_object 43@ visibility 0
+0750: set_object 44@ visibility 0
+
+fade 0 1000
+gosub @Fading
+
+
+// ======== Zadanie #1.2 - Podejdz do Degorio =======
+fade 1 1000
+
+01B4: set_player $PLAYER_CHAR can_move 1
+
+
+00A1: put_actor $PLAYER_ACTOR at 604.5 -11.6 999.40002
+0173: set_actor $PLAYER_ACTOR Z_angle_to 270.0
+
+0860: link_actor $PLAYER_ACTOR to_interior 1
+select_interior 1       
+
+
+// Decision maker dla Billa i Sweeta
+// typ 0 - brak reakcji na cokolwiek
+060A: create_decision_maker_type 0 store_to 88@
+//         
+
+
+// Bill Degorio
+009A: 10@ = create_actor_pedtype 4 model 166 at 613.09998 -6.2 1000.20002 // degorio
+02AB: set_actor 10@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+07BC: set_actor 10@ decision_maker_to 88@
+//
+
+
+// Krzeslo dla Sweeta
+029B: 42@ = init_object 1721 at 613.09998 -8.3604 999.799
+0453: set_object 42@ XY_rotation 0.0 0.0 angle 0.0
+0566: link_object 42@ to_interior 1
+//
+
+
+// Sweet
+009A: $ACTOR_SWEET = create_actor_pedtype 4 model #SPECIAL01 at 613.09998 -7.7 999.80002
+02AB: set_actor $ACTOR_SWEET immunities BP 1 FP 1 EP 1 CP 1 MP 1
+07BC: set_actor $ACTOR_SWEET decision_maker_to 88@
+//
+
+gosub @Cutscene1_setupActors
+
+ 
+
+// Gracz musi dojsc do markera przy Degorio i Sweecie 
+while true
+    wait 0
+    if
+        00ED:   actor $PLAYER_ACTOR 1 near_point 611.40002 -7.6 radius 1.0 1.0 on_foot 
+    then
+        break
+    end
+end
+
+
+// ======== Scenka #2 - w garazu =======
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+
+0707: start_scene_skip_to @Cutscene1_Skip
+
+gosub @Cutscene1_setupActors
+
+015F: set_camera_position 617.20001 -7.7 1001.0 rotation 0.0 0.0 0.0
+0159: camera_on_ped $PLAYER_ACTOR mode 15 switchstyle 2
+
+0639: AS_actor $PLAYER_ACTOR rotate_to_actor 10@
+0639: AS_actor 10@ rotate_to_actor $PLAYER_ACTOR
+
+// Dialog
+00BC: show_text_highpriority GXT 'ME2T2' time 2000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 2000
+    then
+        break
+    end
+end
+
+
+00BC: show_text_highpriority GXT 'ME2T3' time 2000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 2000
+    then
+        break
+    end
+end
+
+
+00BC: show_text_highpriority GXT 'ME2T4' time 4000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4000
+    then
+        break
+    end
+end
+
+
+00BC: show_text_highpriority GXT 'ME2T5' time 4000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4000
+    then
+        break
+    end
+end
+
+
+
+00BC: show_text_highpriority GXT 'ME2T6' time 4000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4000
+    then
+        break
+    end
+end
+
+
+00BC: show_text_highpriority GXT 'ME2T7' time 3000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 3000
+    then
+        break
+    end
+end
+
+
+
+0639: AS_actor $PLAYER_ACTOR rotate_to_actor $ACTOR_SWEET
+wait 500
+00BC: show_text_highpriority GXT 'ME2T8' time 1500 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 1500
+    then
+        break
+    end
+end
+
+
+0639: AS_actor 10@ rotate_to_actor $ACTOR_SWEET
+wait 500
+00BC: show_text_highpriority GXT 'ME2T9' time 4500 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4500
+    then
+        break
+    end
+end
+
+:Cutscene1_Skip
+
+
+
+// ======== Zadanie #1.3 - wyjdz z garazu =======
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+
+while true
+    wait 0
+    
+    00BC: show_text_highpriority GXT 'ME2I4' time 10 flag 1
+    
+    if
+        00ED:   actor $PLAYER_ACTOR 1 near_point 604.5 -11.6 radius 1.0 1.0 on_foot 
+    then
+        01B4: set_player $PLAYER_CHAR can_move 0
+        fade 0 1000
+        gosub @Fading
+        break
+    end
+end
+
+00BC: show_text_highpriority GXT 'ME2I5' time 5000 flag 1
+
+01B4: set_player $PLAYER_CHAR can_move 1
+
+// Usuniecie sztucznej kolizji w garazu
+0108: destroy_object 43@
+0108: destroy_object 44@
+
+00A1: put_actor $PLAYER_ACTOR at 1577.09998 -1474.69995 13.3
+//00A1: put_actor $PLAYER_ACTOR at 1004.90002 -1344.30005 13.2 // tmp for debugging
+0173: set_actor $PLAYER_ACTOR Z_angle_to 270.0
+
+0860: link_actor $PLAYER_ACTOR to_interior 0
+select_interior 0
+02EB: restore_camera_with_jumpcut
+
+fade 1 1000
+
+
+
+
+
+// ========= Zadanie #2 - dojedz na parking przy Ring Donuts =========
+
+:Task2
+//0860: link_actor $PLAYER_ACTOR to_interior 0
+//select_interior 0
+//00A1: put_actor $PLAYER_ACTOR at 1004.90002 -1344.30005 13.2 // tmp for debugging
+
+
+// Samochod pod Ring Donuts - cel
+00A5: 29@ = create_car 405 at 1009.39941 -1366.89941 13.3
+0175: set_car 29@ Z_angle_to 0.0
+02AC: set_car 29@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+//
+
+
+// Kierowca
+009A: 31@ = create_actor_pedtype 4 model 124 at 0.0 0.0 0.0
+072A: put_actor 31@ into_car 29@ driverseat
+02AB: set_actor 31@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+//
+
+
+// Checkpoint
+018A: 100@ = create_checkpoint_at 1009.39941 -1366.89941 13.3
+//
+
+01C3: remove_references_to_car 9@
+
+while true
+    wait 0
+    if
+        00EC:   actor $PLAYER_ACTOR 0 near_point 1009.39941 -1366.89941 radius 15.0 15.0
+    then
+        // Tymczasowe wylaczenie domyslnej akcji F/ENTER - wchodzenia/wychodzenia z pojazdu
+        07CC: set_player $PLAYER_CHAR button_15 0
+
+        00BC: show_text_highpriority GXT 'ME2I6' time 50 flag 1
+        
+        if
+            875C:   not marker 60@ enabled
+        then
+            // Marker
+            0186: 60@ = create_marker_above_car 29@
+            07E0: set_marker 60@ type_to 1
+            //
+            
+            0164: disable_marker 100@
+        end
+        
+        if
+            00E1: player 0 pressed_key 15
+        then
+            05CA: AS_actor $PLAYER_ACTOR enter_car 29@ passenger_seat 0 time 900000
+        end
+        
+        if
+            00DB:   actor $PLAYER_ACTOR in_car 29@
+        then
+            0164: disable_marker 60@
+            break
+        end
+    end
+end
+
+0110: clear_player $PLAYER_CHAR wanted_level
+
+fade 0 1000
+gosub @Fading
+
+// ========= Cutscenka #2 - rozmowa na parkingu + reakcja policji =========
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+07CC: set_player $PLAYER_CHAR button_15 1
+
+//03BA: clear_cars_from_cube_cornerA 1014.90002 -1320.30005 13.2 cornerB 900.0 -1370.33 13.2
+0395: clear_area 1 at 1009.39941 -1366.89941 13.3 radius 50.0
+
+// Radiowoz
+00A5: 30@ = create_car 596 at 1004.90002 -1344.30005 13.2
+0175: set_car 30@ Z_angle_to 180.0
+//
+
+// Ponowne ustawienie samochodu Steve'a, w razie czego jakby gracz go przesunal
+00AB: put_car 29@ at 1009.39941 -1366.89941 13.3
+0175: set_car 29@ Z_angle_to 0.0
+//
+
+
+// Funkcjonariusze
+0129: 34@ = create_actor_pedtype 6 model 280 in_car 30@ driverseat // Policjant #1
+01C8: 35@ = create_actor_pedtype 6 model 280 in_car 30@ passenger_seat 0 // Policjant #2 - idacy po paczki
+    01B2: give_actor 35@ weapon 24 ammo 60
+    01B9: set_actor 35@ armed_weapon_to 0
+//
+
+
+// Kamera
+015F: set_camera_position 1014.39941 -1355.89941 12.5 rotation 0.0 0.0 0.0
+0159: camera_on_ped 31@ mode 15 switchstyle 2
+//
+
+fade 1 1000
+0707: start_scene_skip_to @Cutscene2_Skip
+
+00BC: show_text_highpriority GXT 'ME2T10' time 4000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4000
+    then
+        break
+    end
+end
+
+
+00BC: show_text_highpriority GXT 'ME2T11' time 4000 flag 1
+            
+32@ = 0
+while true
+    wait 0
+    if
+        32@ >= 4000
+    then
+        break
+    end
+end
+
+
+
+100@ = 0 // flaga radiowozu (czy juz zostal wyslany do celu)
+32@ = 0
+while true
+    wait 0
+    
+    if and
+        32@ > 8000
+        100@ == 0
+    then
+        04E0: car 30@ abandon_path_radius 30 // powoduje ruch samochodu po linii prostej, zamiast po sciezkach (drogach)
+        05D1: AS_actor 34@ drive_car 30@ to 1004.5 -1368.40002 13.1 speed 5.0 0 model #NULL 0
+        100@ = 1 // Ustawienie flagi na 1, aby radiowoz zostal wyslany tylko raz
+    end
+    
+    // Jezeli samochod sie zatrzymal, to pasazer idzie we wskazany punkt.
+    // Rozkaz pojscia do punktu jest wykonywany tylko raz, gdyz aktor od razu wychodzi z samochodu, co jest sprzeczne z drugim warunkiem.
+    if and
+        01AE:   car 30@ sphere 0 near_point 1004.5 -1368.40002 radius 3.0 3.0 stopped
+        00DB:   actor 35@ in_car 30@
+    then
+        05D3: AS_actor 35@ goto_point 1009.40002 -1361.69995 13.3 mode 4 time 8000 ms
+    end
+    
+    // Policjant obraca sie w strone samochodu z graczem, jezeli doszedl do celu i rozmowa dobiega konca.
+    if and
+        00ED:   actor 35@ sphere 0 near_point 1009.40002 -1361.69995 radius 1.0 1.0 on_foot
+        32@ > 22000
+    then
+        0639: AS_actor 35@ rotate_to_actor 31@
+    end
+    
+    if
+        32@ > 27000
+    then
+        // Kamera
+        //067B: put_camera_on_car 29@ with_offset 0.0 -0.9 0.35 point_to_actor 35@ tilt 0.0 2
+        0679: put_camera_on_car 29@ with_offset 0.0 -0.9 0.4 rotation 0.0 30.0 0.0 tilt 0.0 switchstyle 2
+        //
+        
+        0687: clear_actor 35@ task
+        01B9: set_actor 35@ armed_weapon_to 24
+        0635: AS_actor 35@ aim_at_actor 31@ 15000 ms
+        
+        00BC: show_text_highpriority GXT 'ME2T17' time 1500 flag 1
+        
+        // Wyzerowanie drugiego licznika
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1500
+            then
+                break
+            end
+        end
+        
+        
+        00BC: show_text_highpriority GXT 'ME2T18' time 1500 flag 1
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1500
+            then
+                break
+            end
+        end
+        
+        
+        00BC: show_text_highpriority GXT 'ME2T19' time 1500 flag 1
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1500
+            then
+                break
+            end
+        end
+        
+        
+        00BC: show_text_highpriority GXT 'ME2T20' time 1000 flag 1
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1000
+            then
+                break
+            end
+        end
+        
+        
+        00BC: show_text_highpriority GXT 'ME2T21' time 1000 flag 1 // Zapnij pasy.
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1000
+            then
+                break
+            end
+        end
+        
+        0395: clear_area 1 at 912.70001 -1364.09998 13.2 radius 80.0
+        
+        05D6: clear_scmpath
+        05D7: add_point_to_scmpath 987.79999 -1334.69995 12.8
+        05D7: add_point_to_scmpath 923.2 -1320.90002 13.2
+        05D7: add_point_to_scmpath 912.70001 -1364.09998 13.2
+
+        07D5: set_car 29@ velocity_in_direction_XYZ 0.0 0.3 0.0 rotation_velocitiesXY 0.0 0.0 unk 0.0
+        06BB: set_actor 31@ drive_car 29@ speed 25.0 along_SCM_path
+        00A8: set_car 29@ to_psycho_driver
+        
+        06A5: AS_actor 35@ jump_forward stay_on_ground 10000 ms and_stands_back
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 2000
+            then
+                break
+            end
+        end
+        
+        015F: set_camera_position 987.79999 -1334.69995 12.61 rotation 0.0 0.0 0.0
+        0159: camera_on_ped $PLAYER_ACTOR mode 15 switchstyle 2
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 3500
+            then
+                break
+            end
+        end
+        
+        015F: set_camera_position 925.0 -1336.90002 13.2 rotation 0.0 0.0 0.0
+        0159: camera_on_ped $PLAYER_ACTOR mode 15 switchstyle 2
+        
+        while true
+            wait 0
+            if
+                01AD:   car 29@ sphere 0 near_point 912.70001 -1364.09998 radius 5.0 5.0
+            then
+                0701: end_scene_skip
+
+                0679: put_camera_on_car 29@ with_offset 0.0 -0.9 0.4 rotation 0.0 30.0 0.0 tilt 0.0 switchstyle 2
+                
+                00BC: show_text_highpriority GXT 'ME2T22' time 2000 flag 1
+                
+                33@ = 0
+                while true
+                    wait 0
+                    if
+                        33@ > 2000
+                    then
+                        05D6: clear_scmpath
+                        06BB: set_actor 31@ drive_car 29@ speed 0.0 along_SCM_path
+
+                        05CD: AS_actor $PLAYER_ACTOR exit_car 29@
+                        
+                        33@ = 0
+                        while true
+                            wait 0
+                            if
+                                33@ > 1000
+                            then
+                                // Wyslanie Steva daleko od gracza
+                                05D6: clear_scmpath
+                                05D7: add_point_to_scmpath 917.1 -1767.3 12.5
+                                05D7: add_point_to_scmpath 836.1 -1792.7 13.0
+                                05D7: add_point_to_scmpath 849.4 -1834.6 11.5
+                                
+                                06BB: set_actor 31@ drive_car 29@ speed 30.0 along_SCM_path
+                                break
+                            end
+                        end
+                        
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+
+        break
+    end
+
+
+    // Dialogi - sa wszystkie w jednej petli, aby wykonywac powyzsze akcje rownolegle
+    
+    if and
+        32@ > 0
+        32@ < 7000
+    then
+        00BC: show_text_highpriority GXT 'ME2T12' time 6000 flag 1
+    end
+    
+    if and
+        32@ > 7000
+        32@ < 13500
+    then
+        00BC: show_text_highpriority GXT 'ME2T13' time 6500 flag 1
+    end
+    
+    if and
+        32@ > 13500
+        32@ < 20000
+    then
+        00BC: show_text_highpriority GXT 'ME2T14' time 6500 flag 1
+    end
+    
+    if and
+        32@ > 20000
+        32@ < 23500
+    then
+        00BC: show_text_highpriority GXT 'ME2T15' time 3500 flag 1
+    end
+    
+    if and
+        32@ > 23500
+        32@ < 27000
+    then
+        00BC: show_text_highpriority GXT 'ME2T16' time 3500 flag 1
+        
+        gosub @GiveExplosives
+    end
+end
+
+0701: end_scene_skip
+jump @Task3
+
+
+:Cutscene2_skip
+fade 0 1000
+gosub @Fading
+fade 1 1000
+
+02EB: restore_camera_with_jumpcut
+
+00AB: put_car 29@ at 912.70001 -1364.09998 13.2
+0175: set_car 29@ Z_angle_to 180.0
+
+05D6: clear_scmpath
+06BB: set_actor 31@ drive_car 29@ speed 0.0 along_SCM_path
+
+05CD: AS_actor $PLAYER_ACTOR exit_car 29@
+
+33@ = 0
+while true
+    wait 0
+    if
+        33@ > 1000
+    then
+        // Wyslanie Steve'a daleko od gracza
+        05D6: clear_scmpath
+        05D7: add_point_to_scmpath 917.1 -1767.3 12.5
+        05D7: add_point_to_scmpath 836.1 -1792.7 13.0
+        05D7: add_point_to_scmpath 849.4 -1834.6 11.5
+        
+        06BB: set_actor 31@ drive_car 29@ speed 30.0 along_SCM_path
+        break
+    end
+end
+
+
+//
+
+
+// ========= Zadanie #3 - dotarcie do miejsca spotkania =========
+:Task3
+//0860: link_actor $PLAYER_ACTOR to_interior 0
+//select_interior 0
+//00A1: put_actor $PLAYER_ACTOR at 956.3 -1410.1 13.2 // tmp for debugging
+
+00BC: show_text_highpriority GXT 'ME2I7' time 5000 flag 1
+
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+
+
+// Decision makers - pierwszy dla rajdowca, drugi dla Da Nang Boys
+// typ 0 oznacza puste zachowanie, aktor nie reaguje na nic - w tym przypadku chodzi nam o brak reakcji na celowanie
+060A: create_decision_maker_type 0 store_to 88@
+060A: create_decision_maker_type 0 store_to 89@
+
+
+// Pojazdy Da Nang Boys
+00A5: 43@ = create_car 402 at 1011.70001 -1448.19995 13.5 // vehicle (Buffalo) (10)
+0175: set_car 43@ Z_angle_to 36.0
+00A5: 44@ = create_car 402 at 1004.20001 -1447.19995 13.5 // vehicle (Buffalo) (11)
+0175: set_car 44@ Z_angle_to 163.997
+00A5: 45@ = create_car 402 at 1009.5 -1441.69995 13.5 // vehicle (Buffalo) (12)
+0175: set_car 45@ Z_angle_to 93.993
+00A5: 46@ = create_car 402 at 1009.20001 -1454.59998 13.5 // vehicle (Buffalo) (14)
+0175: set_car 46@ Z_angle_to 70.0
+00A5: 47@ = create_car 414 at 982.2 -1434.3 13.7 // ciezarowka do pomocy przy zejsciu z dachu po strzelaninie
+0175: set_car 47@ Z_angle_to 180.0
+02AC: set_car 47@ immunities BP 1 FP 0 EP 0 CP 0 MP 0
+//
+
+// Aktorzy Da Nang Boys
+009A: 11@ = create_actor_pedtype 11 model 122 at 1005.6 -1443.6 13.5 // ped (11)
+0173: set_actor 11@ Z_angle_to 194.0
+07BC: set_actor 11@ decision_maker_to 89@ 
+
+009A: 12@ = create_actor_pedtype 11 model 123 at 1005.90002 -1442.09998 13.5 // ped (12)
+0173: set_actor 12@ Z_angle_to 190.004
+07BC: set_actor 12@ decision_maker_to 89@
+
+009A: 13@ = create_actor_pedtype 11 model 123 at 1002.79999 -1446.40002 13.5 // ped (13)
+0173: set_actor 13@ Z_angle_to 250.003
+07BC: set_actor 13@ decision_maker_to 89@
+
+009A: 14@ = create_actor_pedtype 11 model 121 at 1009.79999 -1443.59998 13.5 // ped (14)
+0173: set_actor 14@ Z_angle_to 80.003
+07BC: set_actor 14@ decision_maker_to 89@
+
+009A: 15@ = create_actor_pedtype 11 model 121 at 1010.59998 -1449.30005 13.6 // ped (15)
+0173: set_actor 15@ Z_angle_to 310.003
+07BC: set_actor 15@ decision_maker_to 89@
+
+009A: 16@ = create_actor_pedtype 11 model 122 at 1006.5 -1447.59998 13.6 // ped (16)
+0173: set_actor 16@ Z_angle_to 80.001
+07BC: set_actor 16@ decision_maker_to 89@
+
+009A: 17@ = create_actor_pedtype 11 model 122 at 1013.79999 -1447.80005 13.6 // ped (17)
+0173: set_actor 17@ Z_angle_to 120.003
+07BC: set_actor 17@ decision_maker_to 89@
+
+009A: 18@ = create_actor_pedtype 11 model 123 at 1009.5 -1456.80005 13.5 // ped (18)
+0173: set_actor 18@ Z_angle_to 38.003
+07BC: set_actor 18@ decision_maker_to 89@
+
+009A: 19@ = create_actor_pedtype 11 model 122 at 1009.90002 -1452.69995 13.6 // ped (19)
+0173: set_actor 19@ Z_angle_to 318.001
+07BC: set_actor 19@ decision_maker_to 89@
+//
+
+// Uzbrojenie aktorow
+01B2: give_actor 11@ weapon 30 ammo 300
+01B9: set_actor 11@ armed_weapon_to 30
+
+01B2: give_actor 12@ weapon 30 ammo 300
+01B9: set_actor 12@ armed_weapon_to 30
+
+01B2: give_actor 13@ weapon 30 ammo 300
+01B9: set_actor 13@ armed_weapon_to 30
+
+01B2: give_actor 14@ weapon 30 ammo 300
+01B9: set_actor 14@ armed_weapon_to 30
+
+01B2: give_actor 15@ weapon 30 ammo 300
+01B9: set_actor 15@ armed_weapon_to 30
+
+01B2: give_actor 16@ weapon 30 ammo 300
+01B9: set_actor 16@ armed_weapon_to 30
+
+01B2: give_actor 17@ weapon 30 ammo 300
+01B9: set_actor 17@ armed_weapon_to 30
+
+01B2: give_actor 18@ weapon 30 ammo 300
+01B9: set_actor 18@ armed_weapon_to 30
+
+01B2: give_actor 19@ weapon 30 ammo 300
+01B9: set_actor 19@ armed_weapon_to 30
+//
+
+// Polepszenie celnosci aktorow
+02E2: set_actor 11@ weapon_accuracy_to 100
+02E2: set_actor 12@ weapon_accuracy_to 100
+02E2: set_actor 13@ weapon_accuracy_to 100
+02E2: set_actor 14@ weapon_accuracy_to 100
+02E2: set_actor 15@ weapon_accuracy_to 100
+02E2: set_actor 16@ weapon_accuracy_to 100
+02E2: set_actor 17@ weapon_accuracy_to 100
+02E2: set_actor 18@ weapon_accuracy_to 100
+02E2: set_actor 19@ weapon_accuracy_to 100
+//
+
+// Obiekty ulatwiajace dotarcie na dach
+029B: 48@ = init_object 14409 at 949.7998 -1464.2998 19.2 // schody
+0453: set_object 48@ XY_rotation 0.0 0.0 angle 179.995
+
+029B: 49@ = init_object 3260 at 948.09998 -1451.40002 24.1 // paleta_do_wziecia
+0453: set_object 49@ XY_rotation 37.973 177.463 angle 273.297
+08E9: set_object 49@ liftable 1
+
+
+029B: 50@ = init_object 1426 at 962.59998 -1460.30005 12.4 // object (DYN_SCAFFOLD) (2)
+0453: set_object 50@ XY_rotation 0.0 0.0 angle 91.25
+
+029B: 51@ = init_object 1426 at 962.59998 -1460.30005 16.0 // object (DYN_SCAFFOLD) (3)
+0453: set_object 51@ XY_rotation 0.0 0.0 angle 89.747
+//
+
+// AK-47 i bazooka na dachu
+032B: 56@ = create_weapon_pickup #AK47 group 3 ammo 90 at 973.1 -1437.0 22.5
+032B: 57@ = create_weapon_pickup #ROCKETLA group 3 ammo 1 at 1034.4 -1417.5 22.5
+//
+
+018A: 100@ = create_checkpoint_at 1009.5 -1441.69995 13.5
+
+while true
+    wait 0
+    if
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 1009.5 -1441.69995 radius 60.0 60.0
+    then
+        0164: disable_marker 100@
+
+        fade 0 1000
+        gosub @Fading
+        break
+    end
+end
+
+
+// ========= Cutscenka #3 - Pokazanie obszarow i wyswietlenie instrukcji dla gracza =========
+0826: enable_hud 0
+0581: enable_radar 0
+01B4: set_player $PLAYER_CHAR can_move 0
+
+// Jezeli gracz jest w samochodzie, to zatrzymujemy go i naprawiamy go, zeby przypadkiem nie wybuchl
+if
+    00EE:   actor $PLAYER_ACTOR sphere 0 near_point 1009.5 -1441.69995 radius 100.0 100.0 in_car
+then
+    00D9: 0@ = actor $PLAYER_ACTOR car
+    
+    04BA: set_car 0@ speed_to 0.0
+    0224: set_car 0@ health_to 1000
+end
+
+
+// Kamera
+015F: set_camera_position 946.79999 -1448.40002 30.2 rotation 0.0 0.0 0.0
+0159: camera_on_ped 15@ mode 15 switchstyle 2
+//
+
+fade 1 1000
+
+//00BC: show_text_highpriority GXT 'ME2I8' time 3000 flag 1
+03E5: show_text_box "ME2I8"
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 3000
+    then
+        03BC: 90@ = create_sphere_at 975.40002 -1437.40002 21.6 radius 1.0
+
+        0160: set_camera_point_at 975.40002 -1437.40002 21.6 switchstyle 1
+        
+        //00BC: show_text_highpriority GXT 'ME2I9' time 3000 flag 1
+        03E5: show_text_box "ME2I9"
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                32@ > 3000
+            then
+                0159: camera_on_ped 15@ mode 15 switchstyle 1
+                //00BC: show_text_highpriority GXT 'ME2I10' time 4000 flag 1
+                03E5: show_text_box "ME2I10"
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 2500
+                    then
+                        0936: set_camera 946.79999 -1448.40002 30.2 position_to 963.40002 -1484.0 12.8 time 6000 smooth_transition 1
+                        0920: point_camera 1010.59998 -1449.30005 13.6 transverse_to 950.19922 -1461.59961 22.6 time 6000 smooth_transition 1
+                        0930: lock_camera_position 1
+                        092F: lock_camera_target_point 1
+                        
+                        32@ = 0
+                        while true
+                            wait 0
+                            if
+                                32@ > 7000
+                            then
+                                fade 0 1000
+                                gosub @Fading
+                                break
+                            end
+                        end
+                        
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+// Niszczymy sfere, bo byla tylko na pokazowke - w dalszej czesci kodu bedzie automatycznie tworzona i niszczona przy sprawdzaniu, czy gracz dotarl juz na miejsce
+03BD: destroy_sphere 90@
+
+// ========= Zadanie #4 - dotarcie na dach =========
+fade 1 1000
+
+0826: enable_hud 1
+0581: enable_radar 1
+01B4: set_player $PLAYER_CHAR can_move 1
+
+0930: lock_camera_position 0
+092F: lock_camera_target_point 0
+02EB: restore_camera_with_jumpcut
+
+// Dla przyspieszenia biegu gracza
+gosub @SetNewStats
+
+0188: 91@ = create_marker_above_object 49@
+92@ = 0 // flaga 'dropped' - 'upuszczony' - czy paleta zostala juz upuszczona przez gracza w odpowiednim miejscu
+93@ = 0
+94@ = 0
+
+while true
+    wait 0
+    if
+        00ED:   actor $PLAYER_ACTOR sphere 1 near_point 975.40002 -1437.40002 radius 1.0 1.0 on_foot
+    then
+        break
+    end
+    
+    
+    // Czy gracz zostal zauwazony? Ignorowane sa niektore miejsca, np. przy palecie.
+    // Zmiana koncepcji - Mission Failed z powodu wykrycia przy krawedziach dachu itp. jest zbyt irytujacy. Jezeli gracz jest na dachu, to Da Nang Boys go nie widza.
+    00A0: store_actor $PLAYER_ACTOR position_to 95@ 96@ 97@
+    if and
+        //80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 946.7 -1464.7 cornerB 953.0 -1447.5
+        //80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 952.7 -1462.8 cornerB 968.8 -1458.1
+        80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 1030.4 -1473.5 cornerB 1070.2 -1449.1
+        //80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 983.5 -1421.7 cornerB 970.6 -1438.6
+        //80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 1038.6 -1434.6 cornerB 1032.2 -1421.9
+        //80A3:   not actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 1016.2 -1425.7 cornerB 1009.0 -1419.1
+        
+        97@ < 20.0
+    then
+        if or
+            0364:   actor 11@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 12@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 13@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 14@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 15@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 16@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 17@ spotted_actor $PLAYER_ACTOR
+            0364:   actor 18@ spotted_actor $PLAYER_ACTOR
+        then
+            00BC: show_text_highpriority GXT 'ME2F1' time 5000 flag 1
+            jump @Mission_Failed
+        end
+    end
+    
+    
+    // Obsluga palety
+    if
+        0737:   actor $PLAYER_ACTOR lifting_object 49@
+    then
+        00BC: show_text_highpriority GXT 'ME2I12' time 100 flag 1
+        0164: disable_marker 91@
+    else
+        if and
+            875C:   not marker 91@ enabled
+            92@ == 0
+        then
+            0188: 91@ = create_marker_above_object 49@
+        end
+    end
+    
+    
+    // Jezeli gracz upuscil palete niedaleko punktu docelowego, to ustawiamy obiekt w odpowiednim miejscu, aby gracz mial szanse przeskoczyc na sasiedni dach
+    if
+        0737:   actor $PLAYER_ACTOR lifting_object 49@
+    then
+        // Nie zostalo uzyte tu "if and", bo w SCM drugi warunek jest sprawdzany nawet, jezeli pierwszy jest falszywy, a drugi warunek jednoczesnie tworzy sfere,
+        // ktorej nie chcemy, jezeli gracz nie przenosi obiektu (sphere 1)
+        if
+            04E5:   object 49@ near_point 952.6998 -1461.19922 radius 1.5 1.5 sphere 1
+        then
+            01BC: put_object 49@ at 952.7998 -1461.19922 22.8
+            0453: set_object 49@ XY_rotation 90.0 178.21 angle 265.781
+            
+            08E9: set_object 49@ liftable 0
+            92@ = 1
+            
+            if
+                075C:   marker 91@ enabled
+            then
+                0164: disable_marker 91@
+            end
+        end
+    end
+        
+        
+    // Podpowiedzi do drogi na dachu
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 966.79999 -1460.5 radius 4.0 4.0
+        93@ == 0
+    then
+        03BC: 93@ = create_sphere_at 1037.0 -1466.09998 20.3 radius 1.5 // roof_hint
+    end
+    
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 1037.0 -1466.09998 radius 10.0 10.0
+        not 93@ == 0
+    then                  
+        03BD: destroy_sphere 93@
+        93@ = 0
+        
+        03BC: 94@ = create_sphere_at 1036.6 -1453.2 21.5 radius 1.5 // roof_hint2
+    end
+    
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 1036.6 -1453.2 radius 7.0 7.0
+        not 94@ == 0
+    then
+        03BD: destroy_sphere 94@
+        94@ = 0
+    end
+        
+    
+    // Krotka scenka z podejrzliwym czlonkiem gangu
+    if
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 1038.69 -1454.8 radius 15.0 15.0
+    then
+        if or
+            0611:   actor $PLAYER_ACTOR performing_animation "CLIMB_Pull"
+            0611:   actor $PLAYER_ACTOR performing_animation "CLIMB_Stand"
+        then
+            01B4: set_player $PLAYER_CHAR can_move 0
+    
+            015F: set_camera_position 1007.8 -1457.6 13.6 rotation 0.0 0.0 0.0
+            0160: set_camera_point_at 1038.69 -1454.8 20.3 switchstyle 2
+            
+            while true
+                wait 0
+                if and
+                    8611:   not actor $PLAYER_ACTOR performing_animation "CLIMB_Pull"
+                    8611:   not actor $PLAYER_ACTOR performing_animation "CLIMB_Stand"
+                then
+                    05D3: AS_actor $PLAYER_ACTOR goto_point 1039.8 -1451.4 21.8 mode 6 time 4000 ms
+                    
+                    0639: AS_actor 18@ rotate_to_actor $PLAYER_ACTOR
+                    break
+                end
+            end
+            
+            32@ = 0
+            while true
+                wait 0
+                if
+                    32@ > 2000
+                then
+                    0639: AS_actor 18@ rotate_to_actor 19@
+                end
+                
+                if
+                    32@ > 3000
+                then
+                    break
+                end
+            end
+            
+            01B4: set_player $PLAYER_CHAR can_move 1
+            02EB: restore_camera_with_jumpcut
+        end
+    end
+end
+
+
+if
+    075C:   marker 91@ enabled
+then
+    0164: disable_marker 91@
+end
+
+
+// ========= Cutscenka #4 - Przyjazd rajdowca na miejsce =========
+01B4: set_player $PLAYER_CHAR can_move 0
+
+fade 0 1000
+gosub @Fading
+
+02A3: enable_widescreen 1
+
+// Rajdowiec i jego samochod
+00A5: 61@ = create_car 402 at 958.59961 -1418.39941 13.5
+0175: set_car 61@ Z_angle_to 180.0
+0229: set_car 61@ primary_color_to 37 secondary_color_to 37
+
+0129: 62@ = create_actor_pedtype 4 model 206 in_car 61@ driverseat
+07BC: set_actor 62@ decision_maker_to 88@
+//
+
+
+// Kamera
+015F: set_camera_position 959.099 -1454.8 12.9 rotation 0.0 0.0 0.0
+0159: camera_on_ped 62@ mode 15 switchstyle 2
+//
+
+
+// Ustawienie pozycji gracza
+00A1: put_actor $PLAYER_ACTOR at 975.40002 -1437.40002 21.6
+0639: AS_actor $PLAYER_ACTOR rotate_to_actor 12@
+04EB: AS_actor $PLAYER_ACTOR crouch 1
+//
+
+fade 1 1000
+
+04BA: set_car 61@ speed_to 5.0
+
+05D6: clear_scmpath
+05D7: add_point_to_scmpath 961.0 -1444.7 13.5
+05D7: add_point_to_scmpath 998.90002 -1450.5 13.5
+
+06BB: set_actor 62@ drive_car 61@ speed 15.0 along_SCM_path
+00A8: set_car 61@ to_psycho_driver
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 3000
+    then
+        015F: set_camera_position 1015.3 -1450.4 14.6 rotation 0.0 0.0 0.0
+        
+        0639: AS_actor 11@ rotate_to_actor 62@
+        0639: AS_actor 12@ rotate_to_actor 62@
+        0639: AS_actor 13@ rotate_to_actor 62@
+        0639: AS_actor 14@ rotate_to_actor 62@
+        0639: AS_actor 15@ rotate_to_actor 62@
+        0639: AS_actor 16@ rotate_to_actor 62@
+        0639: AS_actor 17@ rotate_to_actor 62@
+        0639: AS_actor 18@ rotate_to_actor 62@
+        0639: AS_actor 19@ rotate_to_actor 62@
+
+        break
+    end
+end
+
+
+while true
+    wait 0
+    if
+        00EE:   actor 62@ sphere 0 near_point 998.90002 -1450.5 radius 2.0 2.0 in_car
+    then
+        05D6: clear_scmpath
+        0633: AS_actor 62@ exit_car
+    end
+    
+    
+    if
+        80DB:   not actor 62@ in_car 61@
+    then
+        0677: AS_actor 62@ chat_with_actor 12@ lead_speaker_flag 1 unknown_flag 1
+        break
+    end
+end
+
+
+// ========= Zadanie #5 - zabicie Da Nang Boys i przejecie samochodu =========
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+
+00BC: show_text_highpriority GXT 'ME2I13' time 5000 flag 1
+
+0187: 91@ = create_marker_above_actor 11@
+0187: 92@ = create_marker_above_actor 12@
+0187: 93@ = create_marker_above_actor 13@
+0187: 94@ = create_marker_above_actor 14@
+0187: 95@ = create_marker_above_actor 15@
+0187: 96@ = create_marker_above_actor 16@
+0187: 97@ = create_marker_above_actor 17@
+0187: 98@ = create_marker_above_actor 18@
+0187: 99@ = create_marker_above_actor 19@
+
+0187: 100@ = create_marker_above_actor 62@
+07E0: set_marker 100@ type_to 1
+
+81@ = 0 // flaga ataku
+while true
+    wait 0
+    if or
+        051A:   actor 11@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 12@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 13@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 14@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 15@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 16@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 17@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 18@ damaged_by_actor $PLAYER_ACTOR
+    then
+        :Task5_killPlayer
+        if
+            81@ == 0
+        then
+            05E2: AS_actor 11@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 12@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 13@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 14@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 15@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 16@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 17@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 18@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 19@ kill_actor $PLAYER_ACTOR
+            
+            05C4: AS_actor 62@ hands_up 1500000 ms
+            
+            81@ = 1
+        end
+    else
+        // Dodatkowe warunki
+        if or
+            051A:   actor 19@ damaged_by_actor $PLAYER_ACTOR
+            02D6:   actor $PLAYER_ACTOR fires_weapon 0 in_rectangle_cornerA 934.4 -1417.5 cornerB 1041.69 -1480.0
+            051A:   actor 62@ damaged_by_actor $PLAYER_ACTOR       
+        then
+            jump @Task5_killPlayer
+        end
+        
+        00A0: store_actor $PLAYER_ACTOR position_to 301@ 302@ 303@
+        if and
+            00A3:   actor $PLAYER_ACTOR sphere 0 in_rectangle_cornerA 934.4 -1417.5 cornerB 1041.69 -1480.0
+            303@ < 20.0
+        then
+            jump @Task5_killPlayer
+        end
+    end
+    
+    
+    // Wylaczanie markerkow po zabiciu Da Nang
+    if
+        0118:   actor 11@ dead
+    then
+        if
+            075C:   marker 91@ enabled
+        then
+            0164: disable_marker 91@
+        end
+    end
+    
+    if
+        0118:   actor 12@ dead
+    then
+        if
+            075C:   marker 92@ enabled
+        then
+            0164: disable_marker 92@
+        end
+    end
+    
+    if
+        0118:   actor 13@ dead
+    then
+        if
+            075C:   marker 93@ enabled
+        then
+            0164: disable_marker 93@
+        end
+    end
+    
+    if
+        0118:   actor 14@ dead
+    then
+        if
+            075C:   marker 94@ enabled
+        then
+            0164: disable_marker 94@
+        end
+    end
+    
+    if
+        0118:   actor 15@ dead
+    then
+        if
+            075C:   marker 95@ enabled
+        then
+            0164: disable_marker 95@
+        end
+    end
+    
+    if
+        0118:   actor 16@ dead
+    then
+        if
+            075C:   marker 96@ enabled
+        then
+            0164: disable_marker 96@
+        end
+    end
+    
+    if
+        0118:   actor 17@ dead
+    then
+        if
+            075C:   marker 97@ enabled
+        then
+            0164: disable_marker 97@
+        end
+    end
+    
+    if
+        0118:   actor 18@ dead
+    then
+        if
+            075C:   marker 98@ enabled
+        then
+            0164: disable_marker 98@
+        end
+    end
+    
+    if
+        0118:   actor 19@ dead
+    then
+        if
+            075C:   marker 99@ enabled
+        then
+            0164: disable_marker 99@
+        end
+    end
+    // Koniec wylaczania markerow
+    
+    
+    // Mission Failed - rajdowiec nie zyje
+    if
+        0118:   actor 62@ dead
+    then
+        00BC: show_text_highpriority GXT 'ME2F2' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    
+    // Mission Failed - samochod rajdowca zostal zniszczony
+    if
+        0119:   car 61@ wrecked
+    then
+        00BC: show_text_highpriority GXT 'ME2F3' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    
+    // Po zabiciu wszystkich Da Nang kolejna czesc zadania
+    if and
+        0118:   actor 11@ dead
+        0118:   actor 12@ dead
+        0118:   actor 13@ dead
+        0118:   actor 14@ dead
+        0118:   actor 15@ dead
+        0118:   actor 16@ dead
+        0118:   actor 17@ dead
+        0118:   actor 18@ dead
+    then
+        if
+            0118:   actor 19@ dead
+        then
+            00BC: show_text_highpriority GXT 'ME2I14' time 5000 flag 1
+            break
+        end
+    end
+end
+
+0223: set_actor 62@ health_to 500
+054E: clear_actor 62@ damage
+
+0639: AS_actor 62@ rotate_to_actor $PLAYER_ACTOR
+05C4: AS_actor 62@ hands_up 1500000 ms
+
+96@ = 0 // flaga konwersacji
+97@ = 0 // flaga 'przyspieszonego przesluchania' - sytuacja, gdy gracz postrzeli rajdowca przez zakonczeniem kwestii dialogowych
+32@ = 0
+while true
+    wait 0
+    
+    // Mission Failed - rajdowiec nie zyje
+    if
+        0118:   actor 62@ dead
+    then
+        00BC: show_text_highpriority GXT 'ME2F2' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    
+    // Mission Failed - samochod rajdowca zostal zniszczony
+    if
+        0119:   car 61@ wrecked
+    then
+        00BC: show_text_highpriority GXT 'ME2F3' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    
+    if and
+        00F2:   actor $PLAYER_ACTOR near_actor 62@ radius 3.0 3.0 sphere 0
+        96@ == 0
+    then
+        00BC: show_text_highpriority GXT 'ME2T23' time 2500 flag 1
+        
+        96@ = 1
+        32@ = 0
+    end
+    
+    if and
+        96@ == 1
+        32@ > 2500
+    then
+        00BC: show_text_highpriority GXT 'ME2T24' time 1500 flag 1
+        0605: actor 62@ perform_animation_sequence "IDLE_CHAT" from_file "PED" 4.0 loop 1 0 0 0 1500 ms
+        
+        96@ = 2
+        32@ = 0
+    end
+    
+    if and
+        96@ == 2
+        32@ > 2000
+    then
+        96@ = 3
+    end    
+    
+    // Jak gracz postrzeli rajdowca przed skonczeniem kwestii dialogowych, to od razu rozpoczynane sa kolejne sekwencje
+    if and
+        051A:   actor 62@ damaged_by_actor $PLAYER_ACTOR
+        97@ == 0
+    then
+        96@ = 3
+        97@ = 1
+    end
+    //
+             
+    
+    if
+        96@ == 3
+    then
+        00BC: show_text_highpriority GXT 'ME2I15' time 500 flag 1
+        
+        if
+            051A:   actor 62@ damaged_by_actor $PLAYER_ACTOR
+        then
+            0605: actor 62@ perform_animation_sequence "DUCK_cower" from_file "PED" 4.0 loop 1 0 0 0 40000 ms
+            
+            00BC: show_text_highpriority GXT 'ME2T25' time 2000 flag 1
+            
+            96@ = 4
+            32@ = 0
+        end
+    end
+    
+    if and
+        96@ == 4
+        32@ > 2000
+    then
+        00BC: show_text_highpriority GXT 'ME2T26' time 3000 flag 1
+        
+        96@ = 5
+        32@ = 0
+    end
+    
+    if and
+        96@ == 5
+        32@ > 3000
+    then
+        break
+    end
+end
+
+
+0164: disable_marker 100@
+
+0187: 100@ = create_marker_above_actor 62@
+
+0186: 101@ = create_marker_above_car 61@
+07E0: set_marker 101@ type_to 1  
+
+
+// Kolejny etap zadania - decyzja o zabiciu lub wypuszczeniu rajdowca
+
+300@ = 0 // zmienna zawierajaca stan decyzji - sprawdzana w dalszej czesci misji
+while true
+    wait 0
+    if
+        00DB:   actor $PLAYER_ACTOR in_car 61@
+    then
+        00BC: show_text_highpriority GXT 'ME2I17' time 500 flag 1
+        
+        0164: disable_marker 100@
+        0164: disable_marker 101@
+        018A: 102@ = create_checkpoint_at 2102.19995 -2052.6001 13.5
+    else
+        if
+            300@ == 0
+        then
+            00BC: show_text_highpriority GXT 'ME2I16' time 100 flag 1
+        else
+            00BC: show_text_highpriority GXT 'ME2I21' time 100 flag 1
+        end
+                             
+        if
+            875C:   not marker 101@ enabled
+        then
+            0186: 101@ = create_marker_above_car 61@
+            07E0: set_marker 101@ type_to 1  
+            
+            //06D6: disable_racing_checkpoint 102@
+            0164: disable_marker 102@
+            
+            if
+                8118:   not actor 62@ dead
+            then
+                0187: 100@ = create_marker_above_actor 62@
+            end
+        end
+    end
+    
+    
+    if
+        0118:   actor 62@ dead
+    then
+        if
+            075C:   marker 101@ enabled
+        then
+            0164: disable_marker 100@
+        end
+        
+        300@ = 1
+    end
+
+
+    if
+        8104:   not actor $PLAYER_ACTOR near_actor 62@ radius 60.0 60.0 60.0 sphere 0
+    then
+        01C2: remove_references_to_actor 62@
+        break
+    end
+end
+
+    
+// ========= Zadanie #6 - udanie sie na miejsce wyscigu ==========
+:Task6 // debug
+
+
+// Da Nang Boys
+009A: 0@ = create_actor_pedtype 11 model 123 at 2100.19995 -2089.5 13.5 // ped (1)
+0173: set_actor 0@ Z_angle_to 0.003
+
+009A: 1@ = create_actor_pedtype 11 model 123 at 2101.5 -2075.3999 13.6 // ped (2)
+0173: set_actor 1@ Z_angle_to 150.003
+
+009A: 2@ = create_actor_pedtype 11 model 121 at 2104.6001 -2083.6001 13.5 // ped (3)
+0173: set_actor 2@ Z_angle_to 148.002
+
+009A: 3@ = create_actor_pedtype 11 model 121 at 2109.80005 -2089.6001 13.6 // ped (4)
+0173: set_actor 3@ Z_angle_to 60.002
+
+009A: 4@ = create_actor_pedtype 11 model 122 at 2094.8999 -2084.30005 13.5 // ped (5)
+0173: set_actor 4@ Z_angle_to 240.003
+
+009A: 5@ = create_actor_pedtype 11 model 122 at 2099.6001 -2078.8999 13.5 // ped (6)
+0173: set_actor 5@ Z_angle_to 334.003
+
+009A: 6@ = create_actor_pedtype 11 model 122 at 2110.3999 -2075.19995 13.6 // ped (7)
+0173: set_actor 6@ Z_angle_to 182.003
+
+009A: 7@ = create_actor_pedtype 11 model 123 at 2111.30005 -2083.1001 13.6 // ped (8)
+0173: set_actor 7@ Z_angle_to 116.003
+//
+
+
+// Uzbrojenie aktorow
+01B2: give_actor 0@ weapon 30 ammo 300
+01B9: set_actor 0@ armed_weapon_to 30
+
+01B2: give_actor 1@ weapon 30 ammo 300
+01B9: set_actor 1@ armed_weapon_to 30
+
+01B2: give_actor 2@ weapon 30 ammo 300
+01B9: set_actor 2@ armed_weapon_to 30
+
+01B2: give_actor 3@ weapon 30 ammo 300
+01B9: set_actor 3@ armed_weapon_to 30
+
+01B2: give_actor 4@ weapon 30 ammo 300
+01B9: set_actor 4@ armed_weapon_to 30
+
+01B2: give_actor 5@ weapon 30 ammo 300
+01B9: set_actor 5@ armed_weapon_to 30
+
+01B2: give_actor 6@ weapon 30 ammo 300
+01B9: set_actor 6@ armed_weapon_to 30
+
+01B2: give_actor 7@ weapon 30 ammo 300
+01B9: set_actor 7@ armed_weapon_to 30
+//
+
+
+// Samochody Da Nang Boys
+00A5: 21@ = create_car 402 at 1648.19995 -1837.90002 13.5 // vehicle (Buffalo) (1)
+0175: set_car 21@ Z_angle_to 0.0
+
+00A5: 22@ = create_car 402 at 2094.19995 -2085.6001 13.5 // vehicle (Buffalo) (2)
+0175: set_car 22@ Z_angle_to 234.0
+
+00A5: 23@ = create_car 402 at 2100.6001 -2091.0 13.5 // vehicle (Buffalo) (3)
+0175: set_car 23@ Z_angle_to 281.998
+
+00A5: 24@ = create_car 402 at 2098.0 -2079.6001 13.5 // vehicle (Buffalo) (4)
+0175: set_car 24@ Z_angle_to 189.997
+
+00A5: 25@ = create_car 402 at 2103.0 -2083.1001 13.5 // vehicle (Buffalo) (5)
+0175: set_car 25@ Z_angle_to 155.992
+
+00A5: 26@ = create_car 402 at 2109.69995 -2087.80005 13.5 // vehicle (Buffalo) (6)
+0175: set_car 26@ Z_angle_to 86.0
+
+00A5: 27@ = create_car 402 at 2110.6001 -2081.69995 13.5 // vehicle (Buffalo) (7)
+0175: set_car 27@ Z_angle_to 111.995
+
+00A5: 28@ = create_car 402 at 2102.19995 -2074.19995 13.5 // vehicle (Buffalo) (8)
+0175: set_car 28@ Z_angle_to 245.989
+
+00A5: 29@ = create_car 402 at 2108.8999 -2075.30005 13.5 // vehicle (Buffalo) (9)
+0175: set_car 29@ Z_angle_to 175.989
+//
+
+
+// Samochody rajdowcow
+00A5: 30@ = create_car 402 at 2100.30005 -2036.19995 13.5 // race_car1
+0175: set_car 30@ Z_angle_to 0.0
+
+00A5: 31@ = create_car 402 at 2104.6001 -2038.40002 13.5 // race_car2
+0175: set_car 31@ Z_angle_to 0.0
+
+00A5: 34@ = create_car 402 at 2101.19995 -2044.30005 13.5 // race_car3
+0175: set_car 34@ Z_angle_to 0.0
+
+00A5: 35@ = create_car 402 at 2105.69995 -2046.80005 13.5 // race_car4
+0175: set_car 35@ Z_angle_to 0.0
+//
+
+// Rajdowcy kierowcy. Nie czuje kiedy rymuje.
+0129: 36@ = create_actor_pedtype 4 model 123 in_car 30@ driverseat
+0129: 37@ = create_actor_pedtype 4 model 121 in_car 31@ driverseat
+0129: 38@ = create_actor_pedtype 4 model 122 in_car 34@ driverseat
+0129: 39@ = create_actor_pedtype 4 model 123 in_car 35@ driverseat
+//
+
+
+while true
+    wait 10
+    if
+        00DB:   actor $PLAYER_ACTOR in_car 61@
+    then
+        // Wylaczenie markera powrotu do samochodu, jezeli zostal utworzony
+        if
+            075C:   marker 101@ enabled
+        then
+            0164: disable_marker 101@
+        end
+        
+        
+        if and
+            00EE:   actor $PLAYER_ACTOR sphere 1 near_point 2102.19995 -2052.6001 radius 3.0 3.0 in_car
+            00DB:   actor $PLAYER_ACTOR in_car 61@
+        then
+            01B4: set_player $PLAYER_CHAR can_move 0
+            04BA: set_car 61@ speed_to 1.0
+            
+            0164: disable_marker 102@
+    
+            fade 0 1000
+            gosub @Fading
+            break
+        end
+    else
+        00BC: show_text_highpriority GXT 'ME2I22' time 100 flag 1
+        
+        if
+            875C:   not marker 101@ enabled
+        then
+            0186: 101@ = create_marker_above_car 61@
+            07E0: set_marker 101@ type_to 1
+        end
+    end
+    
+    
+    // Mission Failed - samochod rajdowca zostal zniszczony
+    if
+        0119:   car 61@ wrecked
+    then
+        00BC: show_text_highpriority GXT 'ME2F3' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    
+    // Mission Failed - gracz zaatakowal Da Nang Boys
+    if or
+        051A:   actor 0@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 1@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 2@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 3@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 4@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 5@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 6@ damaged_by_actor $PLAYER_ACTOR
+        051A:   actor 7@ damaged_by_actor $PLAYER_ACTOR
+    then
+        00BC: show_text_highpriority GXT 'ME2F4' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+end
+
+// ========= Cutscenka #5 - prezentowanie samochodow i ewentualnie konfidenta
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+fade 1 1000
+
+// Poczatkowa pozycja kamery
+015F: set_camera_position 2101.9 -2030.5 13.0 rotation 0.0 0.0 0.0
+//
+
+// Ustawienie pozycji samochodu gracza
+00AB: put_car 61@ at 2102.19995 -2052.6001 13.5
+0175: set_car 61@ Z_angle_to 0.0
+//
+
+// Gracz nie zabil lub zabil rajdowca
+if
+    300@ == 1
+then
+    // Zabil
+    0936: set_camera 2101.9 -2030.5 13.0 position_to 2104.3 -2053.5 13.0 time 5000 smooth_transition 1
+    0920: point_camera 2107.3 -2089.6 13.5 transverse_to 2107.3 -2089.6 13.5 time 5000 smooth_transition 1
+    0930: lock_camera_position 1
+    092F: lock_camera_target_point 1
+    
+    32@ = 0
+    while true
+        wait 0
+        if
+            32@ > 5000
+        then
+            break
+        end
+    end
+else
+    // Nie zabil
+    009A: 62@ = create_actor_pedtype 4 model 206 at 2107.3 -2089.6 13.5
+    0639: AS_actor 62@ rotate_to_actor $PLAYER_ACTOR
+    0605: actor 62@ perform_animation_sequence "point_loop" IFP_file "ON_LOOKERS" 4.0 loop 1 0 0 0 time 12000
+    
+    0936: set_camera 2101.9 -2030.5 13.0 position_to 2106.2 -2083.4 13.0 time 10000 smooth_transition 1
+    0920: point_camera 2107.3 -2089.6 13.5 transverse_to 2107.3 -2089.6 13.5 time 10000 smooth_transition 1
+    0930: lock_camera_position 1
+    092F: lock_camera_target_point 1
+    
+    32@ = 0
+    while true
+        wait 0
+        if
+            32@ > 12000
+        then
+            break
+        end
+    end
+end
+
+0930: lock_camera_position 0
+092F: lock_camera_target_point 0
+
+// ========= Zadanie #7 - wyscig - gracz musi poznac trase, nie musi sie scigac =========
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+
+
+//00BC: show_text_highpriority GXT 'ME2I18' time 4000 flag 1
+03E5: show_text_box "ME2I18"
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 4000
+    then
+        break
+    end
+end
+
+// Odliczanie
+00BA: show_text_styled GXT 'RACE2' time 1100 style 4
+097A: play_audio_at 0.0 0.0 0.0 event 1056 
+wait 1000
+00BA: show_text_styled GXT 'RACE3' time 1100 style 4
+097A: play_audio_at 0.0 0.0 0.0 event 1056 
+wait 1000
+00BA: show_text_styled GXT 'RACE4' time 1100 style 4
+097A: play_audio_at 0.0 0.0 0.0 event 1056 
+wait 1000
+00BA: show_text_styled GXT 'RACE5' time 800 style 4
+097A: play_audio_at 0.0 0.0 0.0 event 1057
+//
+
+
+// Jezeli gracz nie zabil rajdowca, to Da Nang Boys zaczynaja strzelac dopiero w momencie rozpoczecia wyscigu
+if
+    300@ == 0
+then
+    05E2: AS_actor 0@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 1@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 2@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 3@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 4@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 5@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 6@ kill_actor $PLAYER_ACTOR
+    05E2: AS_actor 7@ kill_actor $PLAYER_ACTOR
+end
+//
+
+01B4: set_player $PLAYER_CHAR can_move 1
+
+
+05EB: assign_car 30@ to_path 903
+05EB: assign_car 31@ to_path 904
+05EB: assign_car 34@ to_path 905
+05EB: assign_car 35@ to_path 906
+
+06FD: set_car 30@ speed_on_path_to 0.9
+06FD: set_car 31@ speed_on_path_to 0.9
+06FD: set_car 34@ speed_on_path_to 0.9
+06FD: set_car 35@ speed_on_path_to 0.9
+
+
+while true
+    wait 0
+    
+    // Mission Failed - gracz zgubil rajdowcow
+    if
+        8202:   not actor $PLAYER_ACTOR near_car 30@ radius 300.0 300.0 sphere 0
+    then
+        00BC: show_text_highpriority GXT 'ME2F5' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    //
+    
+    if
+        860E:   not car 30@ assigned_to_path
+    then
+        break
+    end
+end
+//
+
+
+// ========= Zadanie #8 - podlozenie ladunkow i wysadzenie celu =========
+while true
+    wait 0
+    
+    if
+        80EC:   not actor $PLAYER_ACTOR sphere 0 near_point 2100.30005 -2036.19995 radius 150.0 150.0
+    then
+        break
+    else
+        00BC: show_text_highpriority GXT 'ME2I19' time 10 flag 1
+    end
+end
+
+
+//
+0873: release_path 903
+0873: release_path 904
+0873: release_path 905
+0873: release_path 906
+
+07C0: load_path 903
+07C0: load_path 904
+07C0: load_path 905
+07C0: load_path 906
+//
+
+03D1: play_wav 1
+0729: AS_actor $PLAYER_ACTOR hold_cellphone 1
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 2000
+    then
+        00BC: show_text_highpriority GXT 'ME2T27' time 7000 flag 1
+    end
+    
+    if
+        32@ > 9000
+    then
+        0729: AS_actor $PLAYER_ACTOR hold_cellphone 0
+        break
+    end
+    
+    if
+        03D2:   wav 1 ended
+    then
+        040D: unload_wav 1
+    end
+end
+
+:Debug
+wait 6000
+
+00BC: show_text_highpriority GXT 'ME2I20' time 8000 flag 1
+gosub @GiveExplosives
+
+// Pozbycie sie Da Nang Boys i ich bryk
+01C3: remove_references_to_car 21@
+01C3: remove_references_to_car 22@
+01C3: remove_references_to_car 23@
+01C3: remove_references_to_car 24@
+01C3: remove_references_to_car 25@
+01C3: remove_references_to_car 26@
+01C3: remove_references_to_car 27@
+01C3: remove_references_to_car 28@
+01C3: remove_references_to_car 29@
+
+01C2: remove_references_to_actor 0@
+01C2: remove_references_to_actor 1@
+01C2: remove_references_to_actor 2@
+01C2: remove_references_to_actor 3@
+01C2: remove_references_to_actor 4@
+01C2: remove_references_to_actor 5@
+01C2: remove_references_to_actor 6@
+01C2: remove_references_to_actor 7@
+//
+
+// Pozbycie sie starych samochodow i kierowcow
+01C3: remove_references_to_car 30@
+01C3: remove_references_to_car 31@
+01C3: remove_references_to_car 34@
+01C3: remove_references_to_car 35@
+
+01C2: remove_references_to_actor 36@
+01C2: remove_references_to_actor 37@
+01C2: remove_references_to_actor 38@
+01C2: remove_references_to_actor 39@
+//
+
+// Nowe samochody rajdowcow
+00A5: 30@ = create_car 402 at 2100.30005 -2036.19995 13.5 // race_car1
+0175: set_car 30@ Z_angle_to 0.0
+
+00A5: 31@ = create_car 402 at 2104.6001 -2038.40002 13.5 // race_car2
+0175: set_car 31@ Z_angle_to 0.0
+
+00A5: 34@ = create_car 402 at 2101.19995 -2044.30005 13.5 // race_car3
+0175: set_car 34@ Z_angle_to 0.0
+
+00A5: 35@ = create_car 402 at 2105.69995 -2046.80005 13.5 // race_car4
+0175: set_car 35@ Z_angle_to 0.0
+//
+
+// Nowi Rajdowcy kierowcy. Nie czuje kiedy rymuje.
+0129: 52@ = create_actor_pedtype 4 model 123 in_car 30@ driverseat
+0129: 53@ = create_actor_pedtype 4 model 121 in_car 31@ driverseat
+0129: 54@ = create_actor_pedtype 4 model 122 in_car 34@ driverseat
+0129: 55@ = create_actor_pedtype 4 model 123 in_car 35@ driverseat
+//
+
+// Ustawienie kolorow samochodow, zeby sie nie powtarzaly i zeby cel sie wyroznial
+0229: set_car 30@ primary_color_to 18 secondary_color_to 18
+0229: set_car 31@ primary_color_to 15 secondary_color_to 15
+0229: set_car 34@ primary_color_to 32 secondary_color_to 32
+0229: set_car 35@ primary_color_to 61 secondary_color_to 61
+
+
+0186: 102@ = create_marker_above_car 30@
+0209: 299@ = random_int_in_ranges 0 3 // losujemy sciezke dla celu
+//299@ = 0
+
+// Przypisanie sciezek
+if
+    299@ == 0
+then
+    05EB: assign_car 30@ to_path 903
+    
+    05EB: assign_car 31@ to_path 904
+    05EB: assign_car 34@ to_path 905
+    05EB: assign_car 35@ to_path 906
+end
+
+if
+    299@ == 1
+then
+    05EB: assign_car 30@ to_path 904
+    
+    05EB: assign_car 31@ to_path 903
+    05EB: assign_car 34@ to_path 905
+    05EB: assign_car 35@ to_path 906
+end
+
+if
+    299@ == 2
+then
+    05EB: assign_car 30@ to_path 905
+    
+    05EB: assign_car 31@ to_path 903
+    05EB: assign_car 34@ to_path 904
+    05EB: assign_car 35@ to_path 906
+end
+
+if
+    299@ == 3
+then
+    05EB: assign_car 30@ to_path 906
+    
+    05EB: assign_car 31@ to_path 903
+    05EB: assign_car 34@ to_path 905
+    05EB: assign_car 35@ to_path 904
+end
+
+06FD: set_car 30@ speed_on_path_to 0.9
+06FD: set_car 31@ speed_on_path_to 0.9
+06FD: set_car 34@ speed_on_path_to 0.9
+06FD: set_car 35@ speed_on_path_to 0.9
+
+02AC: set_car 30@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+02AC: set_car 31@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+02AC: set_car 34@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+02AC: set_car 35@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+
+//
+
+
+while true
+    wait 0
+    if or
+        8185:   not car 30@ health >= 1
+        0119:   car 30@ wrecked
+        0118:   actor 52@ dead
+    then
+        0164: disable_marker 102@
+        05EC: release_car 30@ from_path
+        
+        jump @Mission_Passed
+    end
+    
+    // Mission Failed - koniec wyscigu
+    if
+        860E:   not car 30@ assigned_to_path
+    then
+        if and
+            0185:   car 30@ health >= 1
+            8119:   not car 30@ wrecked
+            8118:   not actor 52@ dead
+        then
+            0164: disable_marker 102@
+            00BC: show_text_highpriority GXT 'ME2F6' time 5000 flag 1
+            jump @Mission_Failed
+        end
+    end
+    //
+end
+
+//
+
+return
+
+:Mission_Cleanup
+
+if
+    075C:   marker 91@ enabled
+then
+    0164: disable_marker 91@
+end
+
+if
+    075C:   marker 100@ enabled
+then
+    0164: disable_marker 100@
+end
+
+if
+	8112:	not wasted_or_busted
+then
+	016A: fade 0 time 5000
+	gosub @Fading
+else
+	while 8256:	  not player $PLAYER_CHAR defined
+		wait 0
+	end
+	016A: fade 0 time 0
+end
+
+07CC: set_player $PLAYER_CHAR button_15 1
+0489: set_actor $PLAYER_ACTOR muted 0
+0992: set_player $PLAYER_CHAR weapons_scrollable 1
+0881: set_player $PLAYER_CHAR able_to_shoot_weapons 1
+07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 1
+
+0879: enable_gang_wars 1
+
+// Przywrócenie CJa
+gosub @RestorePlayerState
+
+wait 500
+016A: fade 1 time 1000
+
+00D8: mission_cleanup
+$ONMISSION = 0
+return
+
+:Mission_Failed
+00BA: show_text_styled GXT 'M_FAIL' time 5000 style 1
+
+return
+
+:Mission_Passed
+01E3: show_text_1number_styled GXT 'M_PASS' number 0 time 5000 style 1
+0394: play_music 1
+return
+
+
+:NewPlayerInit
+0489: set_actor $PLAYER_ACTOR muted 1
+07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 0
+0879: enable_gang_wars 0
+return
+
+:Fading
+wait  0
+if
+  816B:    not  fading  
+jf  @Fading
+return
+
+
+// Zapisanie stanu gracza wzbogacone o statystyki tluszczu, staminy i miesni, zeby zmaksymalizowac predkosc biegu gracza (potrzebne do skakania po dachach)
+:SavePlayerState
+00A0: store_actor $PLAYER_ACTOR position_to 113@ 114@ 115@
+0172: 116@ = actor $PLAYER_ACTOR Z_angle
+077E: get_active_interior_to 117@
+01C0: 112@ = player $PLAYER_CHAR wanted_level
+0226: 118@ = actor $PLAYER_ACTOR health
+04DD: 119@ = actor $PLAYER_ACTOR armour
+
+// Gracz dostaje pe³ny stan zdrowia oraz pancerza
+0653: 0@ = float_stat 24
+0092: 0@ = float 0@ to_integer
+0223: set_actor $PLAYER_ACTOR health_to 0@
+
+0945: get_player $PLAYER_CHAR max_armour_to 0@
+0851: set_actor $PLAYER_ACTOR decrease_health_by 119@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 0@
+
+// Zapisanie statystyk
+0653: 200@ = float_stat 21
+0653: 201@ = float_stat 22
+0653: 202@ = float_stat 23
+
+// Zapis broni
+0@ = 0
+1@ = 1
+
+while 13 > 0@
+	04B8: get_weapon_data_from_actor $PLAYER_ACTOR weapon_group 1@ weapon 120@(0@,13i) ammo 133@(0@,13i) model 146@(0@,13i)
+	0@ += 1
+	1@ += 1
+end
+
+048F: actor $PLAYER_ACTOR remove_weapons
+
+return
+
+
+:RestorePlayerState
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to #NULL
+070D: rebuild_player $PLAYER_CHAR
+
+04BB: select_interior 117@
+0860: link_actor $PLAYER_ACTOR to_interior 117@
+03CB: set_rendering_origin_at 113@ 114@ 115@
+
+0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 113@ 114@ 115@
+0173: set_actor $PLAYER_ACTOR Z_angle_to 116@
+02EB: restore_camera_with_jumpcut
+
+010D: set_player $PLAYER_CHAR wanted_level_to 112@
+
+0223: set_actor $PLAYER_ACTOR health_to 118@
+
+// Jako ¿e nie istnieje opcode ustawiajacy iloæ pancerza na konkretna iloæ, musimy najpierw usunaæ pancerz gracza
+// a nastêpnie dodaæ oryginalna wartoæ
+04DD: 0@ = actor $PLAYER_ACTOR armour
+0851: set_actor $PLAYER_ACTOR decrease_health_by 0@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 119@
+
+// Przywrocenie statystyk
+062A: change_float_stat 21 to 200@
+062A: change_float_stat 22 to 201@
+062A: change_float_stat 23 to 202@
+
+// Przywrócenie broni
+048F: actor $PLAYER_ACTOR remove_weapons
+0@ = 0
+
+while 13 > 0@
+	if
+		not 120@(0@,13i) == 0
+	then
+		0247: load_model 146@(0@,13i)
+		038B: load_requested_models
+
+		01B2: give_actor $PLAYER_ACTOR weapon 120@(0@,13i) ammo 133@(0@,13i)
+
+		0249: release_model 146@(0@,13i)
+	end
+	0@ += 1
+end
+
+return
+
+
+:SetNewStats
+062A: change_float_stat 21 to 0.0
+062A: change_float_stat 22 to 1000.0
+062A: change_float_stat 23 to 0.0
+return
+
+:GiveExplosives
+01B2: give_actor $PLAYER_ACTOR weapon 39 ammo 6
+return
+
+
+
+:Cutscene1_setupActors
+00A1: put_actor 10@ at 613.09998 -6.2 1000.20002
+00A1: put_actor $ACTOR_SWEET at 613.09998 -7.7 999.80002
+
+0173: set_actor 10@ Z_angle_to 180.0
+0173: set_actor $ACTOR_SWEET Z_angle_to 0.0
+
+0605: actor $ACTOR_SWEET perform_animation_sequence "sit_tiedup" IFP_file "INE" 4.0 loop 1 0 0 0 time -1 // Animacja zwiazanego Sweeta na krzesle - animacja jest czescia INE
+return

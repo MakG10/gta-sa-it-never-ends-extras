@@ -1,0 +1,170 @@
+{$CLEO}
+0AB1: call_scm_func @GetGInputInstallState 0 31@   // Funkcja sprawdzi, czy GInput jest zainstalowany - jeœli tak, 31@ otrzyma wartoœæ 1
+
+while true
+    wait 0
+    if
+        0256:   player $PLAYER_CHAR defined
+    then
+        if
+            0154:   actor $PLAYER_ACTOR in_zone 'COM'  // Commerce
+        then
+            if
+                $ONMISSION == 0
+            then
+                if
+                    00FF:   actor $PLAYER_ACTOR sphere 1 in_sphere 1615.5907 -1506.7733 14.21 radius 1.2 1.2 2.0 on_foot
+                then
+                    if
+                        03EE:   player $PLAYER_CHAR controllable
+                    then
+                        gosub @IneTriggerMenu
+
+                        while 00FF:   actor $PLAYER_ACTOR sphere 0 in_sphere 1615.5907 -1506.7733 14.21 radius 2.0 2.0 3.0 on_foot
+                            wait 0
+                        end
+                    end
+                end
+            end
+        else
+            wait 250
+        end
+    end
+end
+
+
+:IneTriggerMenu
+01B4: set_player $PLAYER_CHAR can_move 0
+if and
+    31@ == 1
+    0A4B:   has_pad_in_hands
+then
+    // GInput modyfikuje dzia³anie opcodu 0A4B - teraz zwraca true w momencie, gdy gracz u¿ywa pada oraz false, gdy gracz u¿ywa klawiatury
+    // Dziêki temu mozna sprawdziŸ, czy w danym momencie gra powinna wyœwietlaæ w tekstach zwyk³e klawisze, czy kody grafik przycisków pada
+    0512: show_permanent_text_box 'INEEXM2'
+else
+    0512: show_permanent_text_box 'INEEXM'
+end
+08D4: 0@ = create_panel_with_title 'INEEXT' position 29.0 170.0 width 180.0 columns 1 interactive 1 background 1 alignment 0
+08DB: set_panel 0@ column 0 header 'DUMMY' data 'ME1T1' 'ME2T1' 'ME3T1' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY' 'DUMMY'
+1@ = 0
+
+while true
+    wait 0
+    if 0A0F:   should_refresh_helps
+    then
+        // GInput modifykuje te¿ dzia³anie opcodu 0A0F. Oryginalnie, ten opcode zwraca true w momencie, gdy gracz zmieni jêzyk w grze
+        // SCM potrzebuje tej infomacji, by móc ponownie wyœwietliæ potrzebne teksty na ekranie
+        // Z GInput, 0A0F dodatkowo zwróci true w momencie, gdy gracz zmieni przejdzie z u¿ywania klawiatury do pada, lub na odwrót
+        // Dziêki temu, mo¿emy wygenerowaæ od nowa tekst z odpowiednimi przyciskami (tj. klawiszami na klawiaturze lub przyciskami na padzie)
+        if and
+            31@ == 1
+            0A4B:   has_pad_in_hands
+        then
+            0512: show_permanent_text_box 'INEEXM2'
+        else
+            0512: show_permanent_text_box 'INEEXM'
+        end
+    end
+
+    if
+        1@ == 0
+    then
+        if
+            00E1:   player 0 pressed_key 15
+        then
+            // Wyjœcie
+            1@ = 1
+        end
+        if
+            00E1:   player 0 pressed_key 16
+        then
+            // Wybór misji
+            1@ = 2
+        end
+    else
+        if
+            1@ == 1
+        then
+            if
+                80E1:   not player 0 pressed_key 15
+            then
+                08DA: remove_panel 0@
+                03E6: remove_text_box
+
+                01B4: set_player $PLAYER_CHAR can_move 1
+                break
+            end
+        else
+            if
+                80E1:   not player 0 pressed_key 16
+            then
+                08D8: 2@ = panel 0@ selected_row
+
+                08DA: remove_panel 0@
+                03E6: remove_text_box
+                gosub @StartMission
+                break
+            end
+        end
+    end
+end
+
+return
+
+
+:StartMission
+$ONMISSION = 1
+0871: init_jump_table 2@ total_jumps 3 default_jump 0 @StartMission_End jumps 0 @StartMission_Kidnapping 1 @StartMission_DaNangFags 2 @StartMission_TakeItBack -1 @StartMission_End -1 @StartMission_End -1 @StartMission_End -1 @StartMission_End
+
+
+:StartMission_Kidnapping
+gosub @StartMission_Prepare
+0A94: start_custom_mission "INE\Kidnapping"
+return
+
+
+:StartMission_DaNangFags
+gosub @StartMission_Prepare
+0A94: start_custom_mission "INE\DaNangFags"
+return
+
+
+:StartMission_TakeItBack
+gosub @StartMission_Prepare
+0A94: start_custom_mission "INE\TakeItBack"
+
+
+:StartMission_End
+return
+
+
+:StartMission_Prepare
+016A: fade 0 time 1000
+
+while 016B:   fading
+    wait 0
+end
+
+00A1: put_actor $PLAYER_ACTOR at 1612.93 -1506.62 13.5
+0173: set_actor $PLAYER_ACTOR Z_angle_to 91.3
+return
+
+
+:GetGInputInstallState
+// GInput jest zainstalowany, jeœli GInputSA.asi jest za³adowane
+// Do tego celu u¿yta zostanie funkcja WinAPI GetModuleHandle
+0@ = 0
+if 0AA2: 1@ = load_library "kernel32"
+then
+    if 0AA4: 2@ = get_proc_address "GetModuleHandleA" library 1@
+    then
+        0AA7: call_function 2@ num_params 1 pop 0 "GInputSA.asi" 3@
+        if not 3@ == 0
+        then
+            0@ = 1
+        end
+    end
+    0AA3: free_library 1@
+end
+0AB2: ret 1 0@

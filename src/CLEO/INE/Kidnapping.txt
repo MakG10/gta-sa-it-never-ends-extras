@@ -1,0 +1,2778 @@
+{$CLEO .cm}
+
+:Mission
+03A4: name_thread "KIDNAP"
+gosub @Mission_Start
+if
+	0112:	wasted_or_busted
+then
+	gosub @Mission_Failed
+end
+gosub @Mission_Cleanup
+004E: end_thread
+
+
+:Mission_Start
+$ONMISSION = 1
+00BE: text_clear_all
+016A: fade 0 time 1000
+gosub @Fading
+
+gosub @NewPlayerInit
+
+// Te dwie zmienne globalne bêda póŸniej u¿yte w misji
+// W niezmodyfikowanym SCM z San Andreas sa one nieu¿ywane, jednak dla pewnoœci zapiszemy ich
+// oryginalne wartoœci i przywrócimy je po misji
+0085: 92@ = $166
+0085: 93@ = $167
+
+// Te modele potrzebne sa TYLKO w cutscence - modele potrzebne do dalszych czêsci misji nie sa jeszcze tu ³adowane
+0247: load_model #BMYMIB
+0247: load_model #VMAFF1
+0247: load_model #VMAFF2
+0247: load_model #VMAFF3
+0247: load_model #ELEGY
+0247: load_model #BURRITO
+0247: load_model #SILENCED
+0247: load_model #TEC9
+
+// Dziêki 038B gra siê zatrzyma oraz za³aduje WSZYSTKIE modele, które skrypt wylistowa³
+// Nie trzeba sprawdzaæ, czy modele zosta³y za³adowane, a poniewa¿ w tym momencie ekran na 100% jest zaciemniony, œcinka nie jest widoczna
+038B: load_requested_models
+
+// ======== Zmiana skinu gracza i ustawienie interioru ========
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to #VMAFF2
+070D: rebuild_player $PLAYER_CHAR
+
+gosub @SavePlayerState
+
+// Gracz na poczatek dostaje pistolet z t³umikiem z nieskonczona iloœcia amunicji
+// W trakcie misji mo¿e podnieœæ strzelbê i tec9 upuszczone przez zabitych GSF
+01B2: give_actor $PLAYER_ACTOR weapon 23 ammo 99999
+
+04BB: select_interior 0
+0860: link_actor $PLAYER_ACTOR to_interior 0
+
+06D0: enable_emergency_traffic 0
+
+009A: 1@ = create_actor_pedtype 24 model #BMYMIB at 1573.6 -1481.3 13.2
+0173: set_actor 1@ Z_angle_to 234.207
+
+// Poni¿sze dwie linie kodu dostosowane sa pod SilentPatch do San Andreas
+// Bez patcha, 0771 nie ma ¿adnego efektu, a w³asna tablica nie dzia³a w pe³ni poprawnie
+// W przypadku Elegy, bez patcha zamieniana jest tylko tylna tablica, która dodatkowo znika po uszkodzeniu zderzaka
+// SilentPatch poprawia oba b³êdy + dodaje oko³o 5% szans na to, ¿e stworzone auto dostanie tablice z innego miasta
+// ni¿ obecne. U¿ycie 0771 zapobiega takiemu scenariuszowi
+0771: set_model_numplate #ELEGY town_texture 2		// Tablica z Los Santos
+0674: set_car_model #ELEGY numberplate "GTA_MODS"
+
+00A5: 10@ = create_car #ELEGY at 1579.40002 -1484.59998 13.3
+0229: set_car 10@ primary_color_to 0 secondary_color_to 0
+067F: set_car 10@ lights 1
+
+041E: set_radio_station 11
+072A: put_actor $PLAYER_ACTOR into_car 10@ driverseat
+
+// Relacje miêdzy pedtype'ami musimy ustawiæ ZANIM aktorzy o danym pedtype zostana stworzeni
+
+// GS respektuje goœci sprzed domu i Sweeta
+0746: set_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 26
+0746: set_acquaintance 0 of_actors_pedtype 26 to_actors_pedtype 8
+// Kompani gracza nie lubi¹ GS
+0746: set_acquaintance 3 of_actors_pedtype 24 to_actors_pedtype 8
+// Kompani gracza respektuj¹ go
+0746: set_acquaintance 0 of_actors_pedtype 24 to_actors_pedtype 0
+// GS nie lubi gracza
+0747: clear_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 0
+0746: set_acquaintance 3 of_actors_pedtype 8 to_actors_pedtype 0
+
+// ============== Cutscenka =============
+03CB: set_rendering_origin_at 1567.0404 -1524.6031 13.5468
+015F: set_camera_position 1579.6 -1480.7 13.6 rotation 0.0 0.0 0.0
+0159: camera_on_ped 1@ mode 15 switchstyle 2
+
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+
+wait 500
+016A: fade 1 time 1000
+
+0707: start_scene_skip_to @Cutscene_Skip
+
+05D3: AS_actor 1@ goto_point 1577.69995 -1484.5 13.6 mode 4 time -1 ms
+
+while 80F0:	  not actor 1@ sphere 0 near_point 1577.69995 -1484.5 radius 2.0 2.0 stopped_on_foot
+	wait 0
+end
+
+05BF: AS_actor $PLAYER_ACTOR look_at_actor 1@ 30000 ms
+
+00BC: show_text_highpriority GXT "ME1T2" time 3000 flag 1
+32@ = 0
+
+while 3000 > 32@
+	wait 0
+end
+
+016A: fade 0 time 250
+
+while 016B:	  fading
+	wait 0
+end
+
+15@ = 1
+009B: destroy_actor 1@
+
+// Poni¿sze dwie linie kodu dostosowane sa pod SilentPatch do San Andreas
+// Bez patcha, 0771 nie ma ¿adnego efektu, a w³asna tablica nie dzia³a w pe³ni poprawnie
+// W przypadku Burrito, bez patcha zamieniana jest tylko przednia tablica, która dodatkowo znika po uszkodzeniu zderzaka
+// SilentPatch poprawia oba b³êdy + dodaje oko³o 5% szans na to, ¿e stworzone auto dostanie tablice z innego miasta
+// ni¿ obecne. U¿ycie 0771 zapobiega takiemu scenariuszowi
+0771: set_model_numplate #BURRITO town_texture 2	  // Tablica z Los Santos
+0674: set_car_model #BURRITO numberplate "_SILENT_"
+
+00A5: 11@ = create_car #BURRITO at 1558.31 -1536.85 13.53
+0229: set_car 11@ primary_color_to 0 secondary_color_to 0
+04BA: set_car 11@ speed_to 15.0
+0477: set_car 11@ action 9 time 1500
+
+32@ = 0
+
+0129: 12@ = create_actor_pedtype 24 model #VMAFF1 in_car 11@ driverseat
+01C8: 13@ = create_actor_pedtype 24 model #VMAFF3 in_car 11@ passenger_seat 0
+
+015F: set_camera_position 1576.62 -1494.54 16.55 rotation 0.0 0.0 0.0
+0158: camera_on_car 11@ mode 15 switchstyle 2
+
+// ¯adamy, by gra za³adowa³a wszystkie modele do NASTÊPNEGO kadru
+// Tak by po przejœciu do niego budynki w tle nie ³adowa³y siê na oczach gracza
+0A0B: set_rendering_origin_at_3D_coord 1576.86 -1484.59 14.04 angle 270.0
+
+016A: fade 1 time 250
+
+while 016B:	  fading
+	wait 0
+end
+
+00BC: show_text_highpriority GXT "ME1T3" time 3000 flag 1
+
+while 1500 > 32@
+	wait 0
+end
+
+0477: set_car 11@ action 8 time 750
+
+while 81C1:	  not car 11@ stopped
+	wait 0
+end
+
+// Ten segment definiuje sekwencjê zadañ dla aktora
+// OPEN_SEQUENCE_TASK rozpoczyna rejestracjê sekwencji, CLOSE_SEQUENCE_TASK koñczy rejestracjê
+0615: define_AS_pack_begin 14@
+// Ka¿dy opcode z -1 zamiast uchwytu aktora zostaje w³¹czony w tê sekwencjê zadañ
+0633: AS_actor -1 exit_car
+07A1: set_walk_speed 4
+05CA: AS_actor -1 enter_car 10@ passenger_seat 0 time -1
+0616: define_AS_pack_end 14@
+// Po przypisaniu sekwencji zadañ do aktora, wykonuje je on po kolei - dziêki temu nie trzeba rêcznie sprawdzaæ
+// kiedy aktor skoñczy okreœlon¹ czynnoœæ by przypisaæ mu nastêpn¹ itp.
+0618: assign_actor 13@ to_AS_pack 14@
+// CLEAR_SEQUENCE_TASK oznacza sekwencjê jako mo¿liw¹ do zwolnienia - silnik gry wie, ¿e gdy aktor/aktorzy z t¹
+// sekwencj¹ wykonaj¹ j¹ w ca³oœci, mo¿na j¹ zwolniæ z pamiêci
+061B: remove_references_to_AS_pack 14@
+
+while 6000 > 32@
+	wait 0
+end
+
+015F: set_camera_position 1576.86 -1484.59 14.04 rotation 0.0 0.0 0.0
+0160: set_camera_point_at 1579.44 -1484.52 14.04 switchstyle 2
+
+// Aktor ciagle bêdzie wykonywaæ przypisan¹ sekwencjê
+00A1: put_actor 13@ at 1580.92 -1488.69 13.55
+
+while 80DB:	  not actor 13@ in_car 10@
+	wait 0
+end
+
+32@ = 0
+
+00BC: show_text_highpriority GXT "ME1T8" time 3000 flag 1
+
+while 2500 > 32@
+	wait 0
+end
+
+:Cutscene_Skip
+0701: end_scene_skip
+00BE: text_clear_all
+
+016A: fade 0 time 1000
+gosub @Fading
+
+067F: set_car 10@ lights 0
+041E: set_radio_station 2
+
+// Czy cutscenka zosta³a pominiêta zanim stworzono Burrito?
+if
+	15@ == 0
+then
+	009B: destroy_actor 1@
+
+	// Poni¿sze dwie linie kodu dostosowane sa pod SilentPatch do San Andreas
+	// Bez patcha, 0771 nie ma ¿adnego efektu, a w³asna tablica nie dzia³a w pe³ni poprawnie
+	// W przypadku Burrito, bez patcha zamieniana jest tylko przednia tablica, która dodatkowo znika po uszkodzeniu zderzaka
+	// SilentPatch poprawia oba b³êdy + dodaje oko³o 5% szans na to, ¿e stworzone auto dostanie tablice z innego miasta
+	// ni¿ obecne. U¿ycie 0771 zapobiega takiemu scenariuszowi
+	0771: set_model_numplate #BURRITO town_texture 2	  // Tablica z Los Santos
+	0674: set_car_model #BURRITO numberplate "_SILENT_"
+
+	00A5: 11@ = create_car #BURRITO at 1653.21 -1541.65 12.9
+	0175: set_car 11@ Z_angle_to 200.0
+	0229: set_car 11@ primary_color_to 0 secondary_color_to 0
+
+	0129: 12@ = create_actor_pedtype 24 model #VMAFF1 in_car 11@ driverseat
+	01C8: 13@ = create_actor_pedtype 24 model #VMAFF3 in_car 10@ passenger_seat 0
+else
+	00AB: put_car 11@ at 1653.21 -1541.65 12.9
+	0175: set_car 11@ Z_angle_to 200.0
+
+	0430: put_actor 13@ into_car 10@ passenger_seat 0
+end
+
+060A: create_decision_maker_type 0 store_to 91@
+
+054A: set_actor 12@ can_be_shot_in_a_car 0
+054A: set_actor 13@ can_be_shot_in_a_car 0
+0568: set_actor 12@ untargetable 1
+0568: set_actor 13@ untargetable 1
+060B: set_actor 12@ decision_maker_to 91@
+060B: set_actor 13@ decision_maker_to 91@
+
+01B2: give_actor 12@ weapon 32 ammo 99999
+0350: set_actor 12@ maintain_position_when_attacked 1
+0223: set_actor 12@ health_to 1000
+08AF: set_actor 12@ max_health_to 1000
+02E2: set_actor 12@ weapon_accuracy_to 85
+081A: set_actor 12@ weapon_skill_to 2
+09B5: set_actor 12@ signal_after_kill 0
+0446: set_actor 12@ dismemberment_possible 0
+087E: set_actor 12@ weapon_droppable 0
+
+01B2: give_actor 13@ weapon 32 ammo 99999
+0350: set_actor 13@ maintain_position_when_attacked 1
+0223: set_actor 13@ health_to 1000
+08AF: set_actor 13@ max_health_to 1000
+02E2: set_actor 13@ weapon_accuracy_to 85
+081A: set_actor 13@ weapon_skill_to 2
+09B5: set_actor 13@ signal_after_kill 0
+0446: set_actor 13@ dismemberment_possible 0
+087E: set_actor 13@ weapon_droppable 0
+
+020A: set_car 11@ door_status_to 2
+00A7: car 11@ drive_to 2494.73 -1655.42 12.89
+072F: enable_car 11@ stuck_check_distance 1.0 time 2000 and_restore_if stuck 1 flipped 1 unk_place_on_road_properly 1 to_path -1
+00AE: set_car 11@ traffic_behaviour_to 2
+00AD: set_car 11@ max_speed_to 20.0
+02EB: restore_camera_with_jumpcut
+
+// Dobr¹ praktyk¹ jest oznaczanie modeli jako niepotrzebnych tak wczeœnie jak to mo¿liwe
+// Dziêki temu SCM nie bêdzie 'zaklepywaæ' ju¿ tych modeli i gra zwolni je, gdy zajdzie taka potrzeba
+// Nie dojdzie jednak do tego zanim aktorzy z tymi modelami nie zostana unspawnowani
+0249: release_model #BMYMIB
+0249: release_model #VMAFF1
+0249: release_model #VMAFF2
+0249: release_model #VMAFF3
+0249: release_model #ELEGY
+0249: release_model #BURRITO
+0249: release_model #SILENCED
+
+// Resztê modeli zlistujemy teraz, ale nie bêdziemy wymuszaæ ich natychmiastowego za³adowania
+// Zanim gracz dojedzie na Grove Street minie trochê czasu, wiêc gra mo¿e za³adowaæ je wszystkie w tle
+0247: load_model #FAM1
+0247: load_model #FAM2
+0247: load_model #FAM3
+023C: load_special_actor "SWEET" as 1
+0247: load_model #COLT45
+0247: load_model #CHROMEGUN
+0247: load_model #GREENWOO
+0247: load_model #VOODOO
+04ED: load_animation "CAR"
+04ED: load_animation "GANGS"
+04ED: load_animation "PLAYIDLES"
+
+// £adujemy kolizje na Grove Street - tak by ludzie tam zespawnowani nie spadali
+// A im wczeœniej polecimy grze za³adowaæ te kolizje, tym lepiej
+04E4: request_collisions 2505.06 -1671.08
+
+wait 500
+
+02A3: enable_widescreen 0
+01B4: set_player $PLAYER_CHAR can_move 1
+
+
+016A: fade 1 time 1000
+
+// ============= Pierwsza czêœæ - dojazd na Grove Street ==============
+00BC: show_text_highpriority GXT "ME1I1" time 4000 flag 1
+
+018A: 20@ = create_checkpoint_at 2505.06 -1671.08 12.88
+
+16@ = 1		// NIE dojechano na miejsce?
+26@ = 0		// Van dojecha³?
+27@ = 1		// Tekst powinien zostac pokazany?
+28@ = 0		// Gracz wyszed³ z auta?
+60@ = 0		// Zespawnowano ludzi na Grove Street?
+61@ = 0		// Gracz uciek³ z Grove Street?
+59@ = 5.0	// Promieñ sprawdzenia, czy gracz dojecha³ na Grove Street - zwiêksza siê, gdy gracz czeka na Burrito
+94@ = 0		// Gracz rozpocza³ strzelaninê wczeœniej? (misja przebiegnie w alternatywny sposób)
+
+100@ = 0	// Stany upuszczenia broni przez cz³onków GSF, którzy bron lepsza niz pistolet
+101@ = 0
+102@ = 0
+
+
+while true
+	wait 0
+	if or
+		0119:	car 10@ wrecked
+		0119:	car 11@ wrecked
+	then
+		0164: disable_marker 20@
+		0164: disable_marker 50@
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	// Debug, bez ScrDebug kod nigdy siê nie wykona
+	if
+		0736:	is_keyboard_key_just_pressed 71
+	then
+		00AB: put_car 10@ at 2505.06 -1671.08 12.88
+		00AB: put_car 11@ at 2494.73 -1655.42 12.89
+	end
+
+	if
+		60@ == 0
+	then
+		if
+			00EC:	actor $PLAYER_ACTOR sphere 0 near_point 2505.06 -1671.08 radius 70.0 70.0
+		then
+		    // Modele mia³y wystarczajaco czasu na za³adowanie, ale zawsze lepiej sprawdziæ
+		    if and
+                0248:   model #GREENWOO available
+                0248:   model #VOODOO available
+                0248:   model #FAM1 available
+                0248:   model #FAM2 available
+                0248:   model #FAM3 available
+                0248:   model #COLT45 available
+                0248:   model #CHROMEGUN available
+                0248:   model #TEC9 available
+            then
+                if and
+                    023D:   special_actor 1 loaded
+                    04EE:   animation "CAR" loaded
+                    04EE:   animation "GANGS" loaded
+                    04EE:   animation "PLAYIDLES" loaded
+                then
+                    0674: set_car_model #GREENWOO numberplate "COOKIES_"
+        			00A5: 51@ = create_car #GREENWOO at 2517.6001 -1664.5 13.8
+        			0175: set_car 51@ Z_angle_to 120.0
+        			020A: set_car 51@ door_status_to 2
+        			0657: car 51@ open_door 0
+
+                    0674: set_car_model #VOODOO numberplate "__INE___"
+        			00A5: 52@ = create_car #VOODOO at 2498.8 -1682.1 13.3
+        			020A: set_car 51@ door_status_to 2
+        			0175: set_car 52@ Z_angle_to 101.9
+
+
+        			009A: 3@ = create_actor_pedtype 8 model #FAM1 at 2520.19995 -1672.69995 14.8
+        			0173: set_actor 3@ Z_angle_to 88.005
+
+        			009A: 4@ = create_actor_pedtype 8 model #FAM2 at 2535.3999 -1667.0 15.2
+        			0173: set_actor 4@ Z_angle_to 312.003
+
+        			009A: 5@ = create_actor_pedtype 8 model #FAM2 at 2537.30005 -1667.59998 15.2
+        			0173: set_actor 5@ Z_angle_to 0.003
+
+        			009A: 6@ = create_actor_pedtype 8 model #FAM1 at 2535.6001 -1665.09998 15.2
+        			0173: set_actor 6@ Z_angle_to 254.005
+
+        			009A: 7@ = create_actor_pedtype 8 model #FAM1 at 2536.30005 -1667.30005 15.2
+        			0173: set_actor 7@ Z_angle_to 340.002
+
+        			009A: 8@ = create_actor_pedtype 26 model #SPECIAL01 at 2537.3999 -1665.5 15.2
+        			0173: set_actor 8@ Z_angle_to 130.0
+
+        			009A: 40@ = create_actor_pedtype 8 model #FAM3 at 2514.91 -1665.96 13.62
+        			0173: set_actor 40@ Z_angle_to 121.1
+
+        			009A: 41@ = create_actor_pedtype 8 model #FAM2 at 2500.7 -1683.1 13.2
+        			0173: set_actor 41@ Z_angle_to 201.2
+
+
+        			060A: create_decision_maker_type 2 store_to 90@
+        			0708: reset_decision_maker 90@ event 30		// EVENT_VEHICLE_THREAT
+        			0708: reset_decision_maker 90@ event 31		// EVENT_GUN_AIMED_AT
+        			0708: reset_decision_maker 90@ event 49		// EVENT_SHOT_FIRED_WHIZZED_BY
+
+        			060B: set_actor 3@ decision_maker_to 90@
+        			060B: set_actor 4@ decision_maker_to 90@
+        			060B: set_actor 5@ decision_maker_to 90@
+        			060B: set_actor 6@ decision_maker_to 90@
+        			060B: set_actor 7@ decision_maker_to 90@
+        			060B: set_actor 40@ decision_maker_to 90@
+        			060B: set_actor 8@ decision_maker_to 91@
+
+        			060B: set_actor 12@ decision_maker_to 90@
+        			060B: set_actor 13@ decision_maker_to 90@
+
+
+        			// Uzbrojenie cz³onków gangu
+        			01B2: give_actor 3@ weapon 22 ammo 99999
+        			0350: set_actor 3@ maintain_position_when_attacked 1
+        			0223: set_actor 3@ health_to 200
+        			01B9: set_actor 3@ armed_weapon_to 0
+        			087E: set_actor 3@ weapon_droppable 0
+
+        			01B2: give_actor 4@ weapon 22 ammo 99999
+        			0350: set_actor 4@ maintain_position_when_attacked 1
+        			0223: set_actor 4@ health_to 200
+        			01B9: set_actor 4@ armed_weapon_to 0
+        			087E: set_actor 4@ weapon_droppable 0
+
+        			01B2: give_actor 5@ weapon 22 ammo 99999
+        			0350: set_actor 5@ maintain_position_when_attacked 1
+        			0223: set_actor 5@ health_to 200
+        			01B9: set_actor 5@ armed_weapon_to 0
+        			087E: set_actor 5@ weapon_droppable 0
+
+        			01B2: give_actor 6@ weapon 32 ammo 99999
+        			0350: set_actor 6@ maintain_position_when_attacked 1
+        			0223: set_actor 6@ health_to 200
+        			087E: set_actor 6@ weapon_droppable 0
+
+        			01B2: give_actor 7@ weapon 25 ammo 99999
+        			0350: set_actor 7@ maintain_position_when_attacked 1
+        			0223: set_actor 7@ health_to 200
+        			087E: set_actor 7@ weapon_droppable 0
+
+        			01B2: give_actor 8@ weapon 22 ammo 99999
+        			02E2: set_actor 8@ weapon_accuracy_to 60
+        			0350: set_actor 8@ maintain_position_when_attacked 1
+        			0223: set_actor 8@ health_to 500
+        			01B9: set_actor 8@ armed_weapon_to 0
+        			087E: set_actor 8@ weapon_droppable 0
+
+        			01B2: give_actor 40@ weapon 22 ammo 99999
+        			0350: set_actor 40@ maintain_position_when_attacked 1
+        			0223: set_actor 40@ health_to 200
+        			01B9: set_actor 40@ armed_weapon_to 0
+        			087E: set_actor 40@ weapon_droppable 0
+
+        			01B2: give_actor 41@ weapon 22 ammo 99999
+        			0350: set_actor 41@ maintain_position_when_attacked 1
+        			0223: set_actor 41@ health_to 200
+        			01B9: set_actor 41@ armed_weapon_to 0
+        			087E: set_actor 41@ weapon_droppable 0
+
+                    // Pierwszy z aktorów u¿ywa 0812 (TASK_PLAY_ANIM_NON_INTERRUPTABLE) zamiast 0605 (TASK_PLAY_ANIM)
+                    // po to, by nie da³o siê go 'wytraciæ' z animacji poprzez np. zaatakowanie go
+                    // Zamiast tego, misja najpierw musi daæ mu szansê wyjœæ spod auta
+        			0812: actor 40@ perform_animation "FIXN_CAR_LOOP" IFP "CAR" framedelta 4.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+        			0605: actor 41@ perform_animation "LEANIDLE" IFP "GANGS" framedelta 4.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+        			0605: actor 3@ perform_animation "STRLEG" IFP "PLAYIDLES" framedelta 4.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+
+                    // Voodoo nie bêdzie ju¿ nigdzie u¿ywane, model mo¿na oznaczyæ jako nieu¿ywany przez SCM
+                    0249: release_model #VOODOO
+
+        			60@ = 1
+        		end
+        	end
+		end
+	else
+		if
+			0364:	actor 8@ spotted_actor $PLAYER_ACTOR
+		then
+			// Debug, bez ScrDebug opcode nie ma efektu
+			0662: printstring "SPOTTED SWEET"
+			// Gracz zauwa¿y³ Sweeta, mo¿na przeskoczyæ przez ca³y proces pytania cz³onków GS (skrypt od razu wyskoczy tak¿e z nastêpnej pêtli)
+			break
+		end
+
+		if
+			16@ == 0
+		then
+			 // Jeœli gracz zacznie rozrabiaæ na Grove Street, misja przebiegnie w nieco inny sposób
+			 // Strzelanina z gangiem rozpocznie siê wczeœniej, a Sweet przybiegnie sprawdziæ co siê dzieje
+			 if
+				 00FE:	 actor $PLAYER_ACTOR sphere 0 in_sphere 2505.06 -1671.08 12.88 radius 25.0 25.0 25.0
+			 then
+				 if
+					 82D8:	 not actor $PLAYER_ACTOR current_weapon == 56	 // WEAPONTYPE_ANYMELEE
+				 then
+					 // Powy¿sze sprawdzenie przejdzie dalej jeœli bron, która ma w rêku gracz NIE jest bronia bia³a
+					 // Dziêki temu GSF nie zacznie strzelaæ jeœli gracz 'wyceluje' w nich trzymajac np. nó¿
+					 if or
+						02E0:	actor $PLAYER_ACTOR firing_weapon
+						0457:	player $PLAYER_CHAR aiming_at_actor 3@
+						0457:	player $PLAYER_CHAR aiming_at_actor 40@
+						0457:	player $PLAYER_CHAR aiming_at_actor 41@
+					then
+						0164: disable_marker 20@
+						0164: disable_marker 50@
+						0350: set_actor 4@ maintain_position_when_attacked 0
+						0350: set_actor 5@ maintain_position_when_attacked 0
+						0350: set_actor 6@ maintain_position_when_attacked 0
+						0350: set_actor 7@ maintain_position_when_attacked 0
+						0350: set_actor 8@ maintain_position_when_attacked 0
+						gosub @AttackPlayer
+						94@ = 1
+						break
+					end
+				end
+			end
+		end
+	end
+
+	if
+		28@ == 0
+	then
+		// Parametr 'sphere' okreœla, czy w obszarze sprawdzanym przez opcode powinna utworzyæ siê widoczna sfera (czerwony znacznik)
+		// W tym wypadku 16@ poczatkowo ustawione jest na 1 (sfera siê stworzy), a po przyjechaniu na miejsce ustawiana jest na 16@ (sfera znika)
+		if
+			00FE:	actor $PLAYER_ACTOR sphere 16@ in_sphere 2505.06 -1671.08 12.88 radius 59@ 59@ 59@
+		then
+			if
+				27@ == 1
+			then
+				0164: disable_marker 20@
+				if
+					26@ == 0
+				then
+					00BC: show_text_highpriority GXT "ME1I5" time 5000 flag 1
+				else
+					00BC: show_text_highpriority GXT "ME1I6" time 5000 flag 1
+					break	// Przeskakujemy do nastêpnej pêtli
+				end
+				27@ = 0
+				61@ = 1
+			end
+
+			59@ = 30.0
+			16@ = 0
+		end
+	end
+
+	if
+		61@ == 1
+	then
+		if
+			80EC:	not actor $PLAYER_ACTOR sphere 0 near_point 2488.99 -1670.25 radius 65.0 65.0
+		then
+			018A: 20@ = create_checkpoint_at 2505.06 -1671.08 12.88
+			00BC: show_text_highpriority GXT "ME1I7" time 5000 flag 1
+			if
+				0448:	actor $PLAYER_ACTOR in_car 10@
+			then
+				59@ = 5.0
+				61@ = 0
+				16@ = 1
+				27@ = 1
+			else
+				61@ = 2
+			end
+		end
+	end
+
+	if
+		61@ == 2
+	then
+		if
+			00EC:	actor $PLAYER_ACTOR sphere 0 near_point 2488.99 -1670.25 radius 25.0 25.0
+		then
+			61@ = 1
+			0164: disable_marker 20@
+			if
+				26@ == 0
+			then
+				00BC: show_text_highpriority GXT "ME1I5" time 5000 flag 1
+			else
+				00BC: show_text_highpriority GXT "ME1I6" time 5000 flag 1
+				break	// Przeskakujemy do nastêpnej pêtli
+			end
+		end
+	end
+
+
+	if
+		26@ == 0
+	then
+		if
+			01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+		then
+			03CD: disable_car 11@ stuck_check
+
+			26@ = 1
+			27@ = 1
+		end
+	end
+
+	if
+		8448:	not actor $PLAYER_ACTOR in_car 10@
+	then
+		if
+			16@ == 1
+		then
+			if
+				28@ == 0
+			then
+				0164: disable_marker 20@
+				00BC: show_text_highpriority GXT "ME1T9" time 2500 flag 1
+				28@ = 1
+			else
+				if
+					28@ == 1
+				then
+					if
+						876F:	not text_priority_displayed
+					then
+						0186: 50@ = create_marker_above_car 10@
+						07E0: set_marker 50@ type_to 1
+						00BC: show_text_highpriority GXT "ME1I8" time 5000 flag 1
+						28@ = 2
+					end
+				end
+			end
+		end
+	else
+		if
+			not 28@ == 0
+		then
+			0164: disable_marker 50@
+
+			00BC: show_text_highpriority GXT "ME1I1" time 4000 flag 1
+			018A: 20@ = create_checkpoint_at 2505.06 -1671.08 12.88
+
+			28@ = 0
+		end
+	end
+end
+
+// Jeœli misja przebiega w alternatywny sposób (wczeœniejsza strzelanina), ta czêœæ nie musi byæ wykonywana
+if
+	94@ == 0
+then
+	32@ = 0 // Timer dla help boxa
+	34@ = 0 // Help box zosta³ ju¿ pokazany?
+	35@ = 0 // Stan tekstów cz³onków GS
+	36@ = 0 // Gangster #1 spytany?
+	37@ = 0 // Gangster #2 spytany?
+	38@ = 0 // Gangster #3 spytany?
+	39@ = 3 // Ilu gangsterów trzeba spytaæ?
+
+	while true
+		wait 0
+		if
+			34@ == 0
+		then
+			if
+				32@ > 5000
+			then
+				03E5: show_text_box "ME1I9"
+				34@ = 1
+			end
+		end
+
+		// Debug, bez ScrDebug kod nigdy siê nie wykona
+		if
+			0736:	is_keyboard_key_just_pressed 84
+		then
+			jump @Garage_Sequence
+		end
+
+		if
+			0736:	is_keyboard_key_just_pressed 75
+		then
+			// Test œmierci Sweeta
+			0321: AS_actor 8@ die_headshotted
+		end
+
+		if
+			0118:	actor 8@ dead
+		then
+			00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+			jump @Mission_Failed
+		end
+
+		if or
+			0119:	car 10@ wrecked
+			0119:	car 11@ wrecked
+		then
+			00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+			jump @Mission_Failed
+		end
+
+		// Jeœli gracz zacznie rozrabiaæ na Grove Street, misja przebiegnie w nieco inny sposób
+		// Strzelanina z gangiem rozpocznie siê wczeœniej, a Sweet przybiegnie sprawdziæ co siê dzieje
+		if
+			00FE:	actor $PLAYER_ACTOR sphere 0 in_sphere 2505.06 -1671.08 12.88 radius 25.0 25.0 25.0
+		then
+			if
+				82D8:	not actor $PLAYER_ACTOR current_weapon == 56	// WEAPONTYPE_ANYMELEE
+			then
+				// Powy¿sze sprawdzenie przejdzie dalej jeœli bron, która ma w rêku gracz NIE jest bronia bia³a
+				// Dziêki temu GSF nie zacznie strzelaæ jeœli gracz 'wyceluje' w nich trzymajac np. nó¿
+				if or
+					02E0:	actor $PLAYER_ACTOR firing_weapon
+					0457:	player $PLAYER_CHAR aiming_at_actor 3@
+					0457:	player $PLAYER_CHAR aiming_at_actor 40@
+					0457:	player $PLAYER_CHAR aiming_at_actor 41@
+				then
+					0164: disable_marker 20@
+					0164: disable_marker 50@
+					0350: set_actor 4@ maintain_position_when_attacked 0
+					0350: set_actor 5@ maintain_position_when_attacked 0
+					0350: set_actor 6@ maintain_position_when_attacked 0
+					0350: set_actor 7@ maintain_position_when_attacked 0
+					0350: set_actor 8@ maintain_position_when_attacked 0
+					gosub @AttackPlayer
+					94@ = 1
+					break
+				end
+			end
+		end
+
+		if
+			26@ == 0
+		then
+			if
+				01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+			then
+				03CD: disable_car 11@ stuck_check
+
+				26@ = 1
+			end
+		end
+
+		if
+			36@ == 0
+		then
+			if
+				851A:	not actor 3@ damaged_by_actor $PLAYER_ACTOR
+			then
+				if
+					00ED:	actor $PLAYER_ACTOR sphere 1 near_point 2518.7 -1672.8 radius 1.0 1.0 on_foot
+				then
+					// Kopia uchwytu aktora do innej zmiennej, dziêki czemu w AskBoutSweet mo¿na go ³atwo animowaæ
+					0085: 82@ = 3@
+
+                    // Zdefiniujemy listê zadan (animacji), które wykona aktor po odpowiedzeniu graczowi
+				    // Ka¿dy gangster bêdzie mieæ swoj listê zrobiona tak, by po negatywnej odpowiedzi wróci³ do swojej poprzedniej animacji
+
+				    // OPEN_SEQUENCE_TASK rozpoczyna rejestracjê sekwencji, CLOSE_SEQUENCE_TASK koñczy rejestracjê
+                    0615: define_AS_pack_begin 151@
+                    // Ka¿dy opcode z -1 zamiast uchwytu aktora zostaje w³¹czony w tê sekwencjê zadañ
+                    0605: actor -1 perform_animation "INVITE_NO" IFP "GANGS" framedelta 1.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+
+                    // Ten aktor wróci do 'nicnierobienia'
+                    0605: actor -1 perform_animation "SHIFT" IFP "PLAYIDLES" framedelta 1.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+                    0616: define_AS_pack_end 151@
+
+
+					gosub @AskBoutSweet
+
+					// CLEAR_SEQUENCE_TASK oznacza sekwencjê jako mo¿liw¹ do zwolnienia - silnik gry wie, ¿e gdy aktor/aktorzy z t¹
+                    // sekwencj¹ wykonaj¹ j¹ w ca³oœci, mo¿na j¹ zwolniæ z pamiêci
+                    061B: remove_references_to_AS_pack 151@
+
+					36@ = 1
+				end
+			else
+				39@ -= 1
+				36@ = 1
+			end
+		end
+
+		if
+			37@ == 0
+		then
+			if
+				851A:	not actor 40@ damaged_by_actor $PLAYER_ACTOR
+			then
+				if
+					00ED:	actor $PLAYER_ACTOR sphere 1 near_point 2514.55 -1664.44 radius 1.0 1.0 on_foot
+				then
+					0085: 82@ = 40@
+
+					// Ten gangster nie dostaje ¯ADNEJ animacji po to, by nie wyszed³ spod auta
+					151@ = -1
+
+					gosub @AskBoutSweet
+
+					37@ = 1
+				end
+			else
+				39@ -= 1
+				37@ = 1
+			end
+		end
+
+		if
+			38@ == 0
+		then
+			if
+				851A:	not actor 41@ damaged_by_actor $PLAYER_ACTOR
+			then
+				if
+					00ED:	actor $PLAYER_ACTOR sphere 1 near_point 2501.1 -1684.2 radius 1.0 1.0 on_foot
+				then
+					0085: 82@ = 41@
+
+                    0615: define_AS_pack_begin 151@
+                    0605: actor -1 perform_animation "INVITE_NO" IFP "GANGS" framedelta 1.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+
+                    // Ten aktor wróci do opierania siê na aucie
+                    0605: actor -1 perform_animation "LEANIN" IFP "GANGS" framedelta 1.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+                    0605: actor -1 perform_animation "LEANIDLE" IFP "GANGS" framedelta 1.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+                    0616: define_AS_pack_end 151@
+
+					gosub @AskBoutSweet
+                    061B: remove_references_to_AS_pack 151@
+
+					38@ = 1
+				end
+			else
+				39@ -= 1
+				38@ = 1
+			end
+		end
+
+		if
+			0364:	actor 8@ spotted_actor $PLAYER_ACTOR
+		then
+			// Debug, bez ScrDebug opcode nie ma efektu
+			0662: printstring "SPOTTED SWEET"
+			// Gracz zauwa¿y³ Sweeta
+			break
+		end
+	end
+
+	if
+		94@ == 0
+	then
+		0639: AS_actor 4@ rotate_to_actor $PLAYER_ACTOR
+		0639: AS_actor 5@ rotate_to_actor $PLAYER_ACTOR
+		0639: AS_actor 6@ rotate_to_actor $PLAYER_ACTOR
+		0639: AS_actor 7@ rotate_to_actor $PLAYER_ACTOR
+		0639: AS_actor 8@ rotate_to_actor $PLAYER_ACTOR
+		0770: set_actor 4@ target_priority 1
+		0770: set_actor 5@ target_priority 1
+		0770: set_actor 6@ target_priority 1
+		0770: set_actor 7@ target_priority 1
+
+		03C7: set_sensitivity_to_crime 0.5
+
+		00BC: show_text_highpriority GXT "ME1T6" time 1500 flag 1
+		0164: disable_marker 20@
+
+		32@ = 0
+		17@ = 0 // Stan markerów nad cz³onkami GS i Sweetem
+
+		while true
+			wait 0
+			gosub @RelocateBurrito
+			if
+				82D8:	not actor $PLAYER_ACTOR current_weapon == 56	// WEAPONTYPE_ANYMELEE
+			then
+				// Powy¿sze sprawdzenie przejdzie dalej jeœli bron, która ma w rêku gracz NIE jest bronia bia³a
+				// Dziêki temu GSF nie zacznie strzelaæ jeœli gracz 'wyceluje' w nich trzymajac np. nó¿
+				if or
+					02E0:	actor $PLAYER_ACTOR firing_weapon
+					0457:	player $PLAYER_CHAR aiming_at_actor 4@
+					0457:	player $PLAYER_CHAR aiming_at_actor 5@
+					0457:	player $PLAYER_CHAR aiming_at_actor 6@
+					0457:	player $PLAYER_CHAR aiming_at_actor 7@
+					0457:	player $PLAYER_CHAR aiming_at_actor 8@
+				then
+					gosub @CreateMarkers
+					gosub @AttackPlayer
+					break
+				end
+			end
+
+			if
+				26@ == 0
+			then
+				if
+					01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+				then
+					03CD: disable_car 11@ stuck_check
+
+					26@ = 1
+				end
+			end
+
+
+			if
+				32@ > 1500
+			then
+				gosub @CreateMarkers
+				00BC: show_text_highpriority GXT "ME1I3" time 1 flag 1
+			end
+
+			if
+				0118:	actor 8@ dead
+			then
+				00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+				jump @Mission_Failed
+			end
+
+			if or
+				0119:	car 11@ wrecked
+				0118:	actor 13@ dead
+			then
+				00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+				jump @Mission_Failed
+			end
+		end
+
+
+		// ============ Druga czêœæ - zabijanie ============
+
+		015D: set_gamespeed 0.5
+		03D5: remove_text "ME1I3"
+
+		// Resetujemy licznik zabójstw - przy jego pomocy sprawdzimy, ilu gangsterów zabi³ gracz
+		0297: reset_player $PLAYER_CHAR destroyed_model_counters
+
+		30@ = 0 // Sweet spêka³?
+		32@ = 0
+
+		while true
+			if or
+				8118:	not actor 4@ dead
+				8118:	not actor 5@ dead
+				8118:	not actor 6@ dead
+				8118:	not actor 7@ dead
+			jf break
+			wait 0
+
+			gosub @RelocateBurrito
+			gosub @ManageDroppedWeapons
+			if
+				075C:	marker 21@ enabled
+			then
+				if
+					0118:	actor 4@ dead
+				then
+					0164: disable_marker 21@
+				end
+			end
+
+			if
+				075C:	marker 22@ enabled
+			then
+				if
+					0118:	actor 5@ dead
+				then
+					0164: disable_marker 22@
+				end
+			end
+
+			if
+				075C:	marker 23@ enabled
+			then
+				if
+					0118:	actor 6@ dead
+				then
+					0164: disable_marker 23@
+				end
+			end
+
+			if
+				075C:	marker 24@ enabled
+			then
+				if
+					0118:	actor 7@ dead
+				then
+					0164: disable_marker 24@
+				end
+			end
+
+			// Sweet spêka po zabiciu przynajmniej dwóch goœci z GS (nie chcemy, by Sweet œci¹ga³ ¿ycie graczowi jeœli ten nie mo¿e mu nic zrobiæ)
+			if
+				30@ == 0
+			then
+				0806: get_player $PLAYER_CHAR kills_from_last_checkpoint 29@
+				if
+					29@ >= 2
+				then
+					01B9: set_actor 8@ armed_weapon_to 0
+					05C4: AS_actor 8@ hands_up -1 ms
+					30@ = 1
+				end
+			end
+
+			if
+				26@ == 0
+			then
+				if
+					01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+				then
+					03CD: disable_car 11@ stuck_check
+
+					26@ = 1
+				end
+			end
+
+			if
+				0118:	actor 8@ dead
+			then
+				0164: disable_marker 25@
+				015D: set_gamespeed 1.0
+				00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+				jump @Mission_Failed
+			end
+
+			if or
+				0119:	car 11@ wrecked
+				0118:	actor 13@ dead
+			then
+				015D: set_gamespeed 1.0
+				00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+				jump @Mission_Failed
+			end
+
+
+			// Przywrócenie prêdkoœci gry po 2 sekundach
+			if
+				32@ > 2000
+			then
+				015D: set_gamespeed 1.0
+			end
+		end
+
+		0164: disable_marker 21@
+		0164: disable_marker 22@
+		0164: disable_marker 23@
+		0164: disable_marker 24@
+		015D: set_gamespeed 1.0
+	else
+		// Alternatywny kod dla misji podczas wczeœniejszaj strzelaniny
+		gosub @AltShootoutScene
+	end
+else
+	// Alternatywny kod dla misji podczas wczeœniejszaj strzelaniny
+	gosub @AltShootoutScene
+end
+
+// ========== Trzecia czêœæ - porwanie ==========
+
+84@ = 0		// Zespawowano pierwsza falê wsparcia GS?
+
+if
+	875C:	not marker 25@ enabled
+then
+	gosub @CreateSweetMarker
+end
+
+00BC: show_text_highpriority GXT "ME1I4" time 5000 flag 1
+
+while 8457:	  not player $PLAYER_CHAR aiming_at_actor 8@
+	wait 0
+	gosub @RelocateBurrito
+	gosub @ManageDroppedWeapons
+
+	if
+		26@ == 0
+	then
+		if
+			01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+		then
+			03CD: disable_car 11@ stuck_check
+
+			26@ = 1
+		end
+	end
+
+	if
+		0118:	actor 8@ dead
+	then
+		0164: disable_marker 25@
+		00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if or
+		0119:	car 11@ wrecked
+		0118:	actor 13@ dead
+	then
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	// Jeœli misja przechodzona jest w alternatywny sposób, pierwsza fala wsparcia mo¿e pojawiæ siê wczeœniej
+	if
+	   94@ == 1
+	then
+		if
+			84@ == 0
+		then
+			if
+				80C2:	not sphere_onscreen 2493.3 -1671.4 13.3 radius 5.0
+			then
+				gosub @GroveFirstBackup
+			end
+		end
+	end
+end
+
+00BC: show_text_highpriority GXT "ME1T7" time 2500 flag 1
+
+// Przy alternatywnym przejœciu, te akcje wykona³y siê ju¿ wczeœniej
+if
+	94@ == 0
+then
+	// Podkrêcamy temperaturê - niech przed Burrito rozpocznie siê strzelanina
+	05E2: AS_actor 40@ kill_actor 13@
+	if
+		26@ == 1
+	then
+		05E2: AS_actor 41@ kill_actor 12@
+	else
+		05E2: AS_actor 41@ kill_actor $PLAYER_ACTOR
+	end
+	05E2: AS_actor 3@ kill_actor $PLAYER_ACTOR
+	// Przy strzelaninie tylko gracz mo¿e uszkodziæ oba auta - inaczej bardzo szybko wybuchn¹
+	02AA: set_car 10@ immune_to_nonplayer 1
+	02AA: set_car 11@ immune_to_nonplayer 1
+	053F: set_car 11@ tires_vulnerability 0
+	0224: set_car 11@ health_to 3000
+end
+
+32@ = 0
+
+while 2750 > 32@
+	wait 0
+	gosub @ManageDroppedWeapons
+	// Podczas tej krótkiej przerwy lepiej ci¹gle sprawdzaæ warunki przerwania misji i dojazd Burrito (gracz móg³ siê bardzo pospieszyæ i zaatakowaæ Sweeta wczeœniej)
+	if
+		26@ == 0
+	then
+		if
+			01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+		then
+			03CD: disable_car 11@ stuck_check
+
+			26@ = 1
+		end
+	end
+
+	if
+		84@ == 0
+	then
+		// Praktycznie niemo¿liwe jest, by w momencie wycelowania w Sweeta gracz jedoczeœnie widzia³ ten punkt, ale sprawdziæ nie zaszkodzi
+		// Nadgorliwoœæ gorsza od faszyzmu, ale w pisaniu misji daje pozytywne efekty
+		if
+			80C2:	not sphere_onscreen 2493.3 -1671.4 13.3 radius 5.0
+		then
+			gosub @GroveFirstBackup
+		end
+	end
+
+	if
+		0118:	actor 8@ dead
+	then
+		0164: disable_marker 25@
+		00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if or
+		0119:	car 11@ wrecked
+		0118:	actor 13@ dead
+	then
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+end
+
+00BC: show_text_highpriority GXT "ME1IA" time 5000 flag 1
+
+
+$166 = 100	 // ¯ycie gangstera #1 w procentach (pasa¿er Elegy)
+$167 = 100	 // ¯ycie gangstera #2 w procentach (kierowca Burrito)
+// U¿ywanie zmiennych globalnych w CLEO to Z£Y pomys³, jednak trik ze onscreen counterami u¿ywajacymi zmiennych lokalnych
+// nie dzia³a w misjach - zmienne $166 i $167 sa nieu¿ywana w domyœlnym main.scm z SA wiêc w 90% przypadków ich u¿ycie jest bezpieczne
+// Dla pewnoœci, ich wartoœci zosta³y zachowane przed misja (patrz wy¿ej)
+03C4: set_status_text $166 type 1 GXT 'ME1S1'
+04F7: status_text $167 type 1 line 2 GXT 'ME1S2'
+
+// W tym momencie nie potrzbeujemy ju¿ tych animacji
+04EF: release_animation "CAR"
+04EF: release_animation "GANGS"
+04EF: release_animation "PLAYIDLES"
+
+// To niez³y moment, by za³adowaæ model radiowozu, który pojawi siê póŸniej, po strzelaninie
+0247: load_model #COPCARLA
+
+29@ = 0 // Stan Sweeta (czy idzie w kierunku okreœlonych koordynatów/do auta)
+31@ = 0 // Czy Sweet ucieka?
+35@ = 0 // Kierowca do³aczy³ siê do walki?
+38@ = 0 // 'Wsparcie' wys³ane?
+39@ = 0 // Pokazano tekst o pomocy dla kompanów gracza?
+33@ = 0 // Timer dla help boxa
+34@ = 0 // Help box zosta³ ju¿ pokazany?
+
+// Jeœli misja przebiega w alternatywny sposób, Sweet mo¿e pominaæ czêœæ drogi do pojazdu
+// ZnajdŸmy najbli¿szy mu obecnie punkt jego œcie¿ki aby siê nie cofa³
+00A0: store_actor 8@ position_to 95@ 96@ 97@
+0509: 98@ = distance_between_XY 95@ 96@ and_XY 2519.2 -1669.7
+if
+	26@ == 0
+then
+	73@ = 2511.97
+	74@ = -1663.73
+	75@ = 13.5
+else
+	0407: store_coords_to 73@ 74@ 75@ from_car 11@ with_offset 0.0 -3.0 0.0
+end
+0509: 99@ = distance_between_XY 95@ 96@ and_XY 73@ 74@
+if
+	00EC:	actor 8@ sphere 0 near_point 2537.4 -1665.5 radius 3.0 3.0
+then
+	// 1szy punkt jest najbli¿szy
+	30@ = 1
+	05D3: AS_actor 8@ goto_point 2533.4 -1670.1 15.1 mode 4 time -1 ms
+else
+	if
+		0025:	98@ > 99@
+	then
+		// 2gi punkt jest najbli¿szy
+		30@ = 2
+		05D3: AS_actor 8@ goto_point 2519.2 -1669.7 14.5 mode 4 time -1 ms
+	else
+		// 3ci punkt jest najbli¿szy
+		30@ = 3
+		05D3: AS_actor 8@ goto_point 73@ 74@ 75@ mode 4 time -1 ms
+	end
+end
+
+while 80DB:	  not actor 8@ in_car 11@
+	wait 0
+	gosub @ManageDroppedWeapons
+	if
+		34@ == 0
+	then
+		if
+			33@ > 2500
+		then
+			03E5: show_text_box "ME1IF"
+			34@ += 1
+		end
+	else
+		if
+			34@ == 1
+		then
+			if
+				33@ > 7500
+			then
+				03E5: show_text_box "ME1ID"
+				34@ += 1
+			end
+		else
+			if
+				34@ == 2
+			then
+				if
+					09DE:	actor 8@ entering_car
+				then
+					0151: remove_status_text $166
+					0151: remove_status_text $167
+					34@ += 1
+				end
+			end
+		end
+	end
+
+	if
+	   39@ == 0
+	then
+	   if or
+			8184:	not actor 12@ health >= 450
+			8184:	not actor 13@ health >= 450
+		then
+			00BC: show_text_highpriority GXT "ME1IE" time 5000 flag 1
+			39@ = 1
+		end
+	end
+
+	if and
+		26@ == 1
+		35@ == 0
+	then
+		080E: get_actor 12@ ped_event_to 36@
+		080E: get_actor 13@ ped_event_to 37@
+		if or
+			36@ == 15		  // EVENT_SHOT_FIRED
+			37@ == 15		  // EVENT_SHOT_FIRED
+		then
+			// Debug, bez ScrDebug opcode nie ma efektu
+			0662: printstring "DANGER"
+			0633: AS_actor 12@ exit_car
+			0633: AS_actor 13@ exit_car
+			35@ = 1
+		end
+	end
+
+	if
+		26@ == 0
+	then
+		if
+			01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+		then
+			03CD: disable_car 11@ stuck_check
+			0407: store_coords_to 73@ 74@ 75@ from_car 11@ with_offset 0.0 -3.0 0.0
+
+			if
+				30@ == 3
+			then
+				05D3: AS_actor 8@ goto_point 73@ 74@ 75@ mode 4 time -1 ms
+			end
+			26@ = 1
+		end
+	end
+
+	if
+		84@ == 0
+	then
+		if
+			80C2:	not sphere_onscreen 2493.3 -1671.4 13.3 radius 5.0
+		then
+			gosub @GroveFirstBackup
+		end
+	end
+
+	if
+		0457:	player $PLAYER_CHAR aiming_at_actor 8@
+	then
+		if
+			31@ == 1
+		then
+			// Debug, bez ScrDebug opcode nie ma efektu
+			0663: printint "HALT" 30@
+			0687: clear_actor 8@ task
+			if
+				30@ == 1
+			then
+				05D3: AS_actor 8@ goto_point 2533.4 -1670.1 15.1 mode 4 time -1 ms
+			else
+				if
+					30@ == 2
+				then
+					05D3: AS_actor 8@ goto_point 2519.2 -1669.7 14.5 mode 4 time -1 ms
+				else
+					if
+						30@ == 3
+					then
+						if
+							26@ == 1
+						then
+							05D3: AS_actor 8@ goto_point 73@ 74@ 75@ mode 4 time -1 ms
+						end
+					end
+				end
+			end
+
+			31@ = 0
+		end
+		32@ = 0
+	end
+
+	if
+		31@ == 0
+	then
+		if
+			30@ == 1
+		then
+			if
+				00EC:	actor 8@ sphere 0 near_point 2533.4 -1670.1 radius 1.0 1.0
+			then
+				05D3: AS_actor 8@ goto_point 2519.2 -1669.7 14.5 mode 4 time -1 ms
+				30@ = 2		// Przejœcie przed dom
+			end
+		else
+			if
+				30@ == 2
+			then
+				if
+					00EC:	actor 8@ sphere 0 near_point 2519.2 -1669.7 radius 2.0 2.0
+				then
+					// Sweet pójdzie do auta tylko jeœli te ju¿ dojecha³o
+					if
+						26@ == 0
+					then
+						73@ = 2511.97
+						74@ = -1663.73
+						75@ = 13.5
+					else
+						0407: store_coords_to 73@ 74@ 75@ from_car 11@ with_offset 0.0 -3.0 0.0
+					end
+					05D3: AS_actor 8@ goto_point 73@ 74@ 75@ mode 4 time -1 ms
+					30@ = 3		// Przejœcie do auta
+				end
+			else
+				if
+					30@ == 3
+				then
+					if
+						00EC:	actor 8@ sphere 0 near_point 73@ 74@ radius 2.0 2.0
+					then
+						if
+							26@ == 1
+						then
+							020A: set_car 11@ door_status_to 3
+							07A1: set_walk_speed 4
+							05CA: AS_actor 8@ enter_car 11@ passenger_seat 1 time -1
+
+							30@ = 4
+						end
+					end
+				end
+			end
+		end
+
+		if and
+			32@ > 2000
+			not 30@ == 4
+		then
+			0687: clear_actor 8@ task
+			0751: AS_actor 8@ flee_from_actor $PLAYER_ACTOR run_distance 100000.0 time 999999 change_course 1 unknown 3000 5000 away_radius 50.0
+
+			31@ = 1
+		end
+	else
+		if
+			80F2:	not actor 8@ near_actor $PLAYER_ACTOR radius 75.0 75.0 0
+		then
+			// Sweet uciek³
+			00BC: show_text_highpriority GXT "ME1F2" time 5000 flag 1
+			jump @Mission_Failed
+		end
+	end
+
+	if
+		30@ >= 3
+	then
+		if
+			38@ == 0
+		then
+			// Losowanie 1 z 2 dostêpnych miejsc spawnu wsparcia GS
+			0209: 36@ = random_int_in_ranges 0 2
+			if
+				36@ == 0
+			then
+				if
+					80C2:	not sphere_onscreen 2492.5 -1635.0 13.4 radius 3.0
+				then
+					// Miejsce #1
+					gosub @GroveSecondBackupPos1
+				else
+					if
+						80C2:	not sphere_onscreen 2520.5 -1685.5 13.49 radius 3.0
+					then
+						// Miejsce #2
+						gosub @GroveSecondBackupPos2
+					end
+				end
+			else
+				if
+					80C2:	not sphere_onscreen 2520.5 -1685.5 13.49 radius 3.0
+				then
+					// Miejsce #2
+					gosub @GroveSecondBackupPos2
+				else
+					if
+						80C2:	not sphere_onscreen 2492.5 -1635.0 13.4 radius 3.0
+					then
+						// Miejsce #1
+						gosub @GroveSecondBackupPos1
+					end
+				end
+			end
+		end
+	end
+
+	if
+		0118:	actor 8@ dead
+	then
+		0164: disable_marker 25@
+
+		00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if or
+		0119:	car 11@ wrecked
+		0118:	actor 12@ dead
+		0118:	actor 13@ dead
+	then
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	0226: $166 = actor 13@ health
+	0226: $167 = actor 12@ health
+	$166 /= 10
+	$167 /= 10
+end
+
+0164: disable_marker 25@
+
+// ========== Czwarta czêœæ - ucieczka ==========
+
+0508: car 11@ close_all_doors
+02AA: set_car 10@ immune_to_nonplayer 0
+02AA: set_car 11@ immune_to_nonplayer 0
+02AC: set_car 10@ immunities BP 0 FP 0 EP 1 CP 0 MP 0
+02AC: set_car 11@ immunities BP 0 FP 0 EP 1 CP 0 MP 0
+053F: set_car 10@ tires_vulnerability 0
+
+060B: set_actor 12@ decision_maker_to 91@
+05CB: AS_actor 12@ enter_car 11@ as_driver 30000 ms
+0687: clear_actor 13@ task
+
+// Normalnie, uchwyt na grupê gracza znajduje siê pod zmienna $PLAYER_GROUP
+// Jednak dobbra praktyka jest u¿ywanie tak ma³o zmiennych globalnych, jak to tylko mo¿liwe
+// Pobierzemy uchwyt na grupê gracza do w³asnej zmiennej lokalnej
+// Bêdzie on identyczny ze zmienna $PLAYER_GROUP
+07AF: 150@ = player $PLAYER_CHAR group
+0631: put_actor 13@ in_group 150@
+0A20: disable_player $PLAYER_CHAR group_control_back 1
+0186: 50@ = create_marker_above_car 11@
+07E0: set_marker 50@ type_to 1
+018A: 20@ = create_checkpoint_at 1573.89 -1475.7 13.55
+
+// Te opcode wymagaja, aby modele spawnowanych pojazdów by³y za³adowane
+// Dlatego #COPCARLA za³adowaliœmy ju¿ wczeœniej
+085A: spawn_emergency_vehicle_model #COPCARLA on_street_nearest_to 2345.37 -1681.29 13.35
+085A: spawn_emergency_vehicle_model #COPCARLA on_street_nearest_to 2402.83 -1662.81 13.38
+
+0151: remove_status_text $166
+0151: remove_status_text $167
+
+// Nie potrzebujemy ju¿ markerów nad pickupami broni
+0164: disable_marker 109@
+0164: disable_marker 110@
+0164: disable_marker 111@
+
+// We wczeœniejszej wersji misji, GSF spawnuj¹ce siê jako poœcig za Burrito (kod ni¿ej) mia³o
+// swój pedtype ustawiony na 8 (Gang2, GSF). Jednoczeœnie, kompan gracza ostrzeliwa³ ich dziêki ustawionym
+// relacjom - gdy tylko zobaczy³ peda o podanym typie, zacz¹³ go atakowaæ. Spowodowa³o to jednak, ¿e
+// kompan gracza 'zaczepia³' losowe grupki GSF i ostrzeliwa³ ich samochody, mimo ¿e ci nie byli w stosunku
+// do niego agresywni.
+// ¯eby to naprawiæ, poœcig dostanie swój osobny typ 25, a relacje z typem 8 zostan¹ zresetowane.
+0747: clear_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 0
+0747: clear_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 24
+0747: clear_acquaintance 3 of_actors_pedtype 24 to_actors_pedtype 8
+// 0746/0747 nie zmieniaj¹ zachowañ ju¿ stworzonych aktorów - ¿eby zmieniæ zachowania
+// kompana gracza, trzeba zastosowaæ 077A/077B
+// Oznacza to ¿e kierowca Burrito nie ma zmienionych zachowañ - nie robi to ¿adnej ró¿nicy, poniewa¿
+// zajêty jest prowadzeniem auta, a pakiet decyzyjnoœci zapewnia, ¿e nic go nie rozproszy
+077B: clear_actor 13@ acquaintance 3 to_actors_pedtype 8
+0746: set_acquaintance 4 of_actors_pedtype 25 to_actors_pedtype 0
+0746: set_acquaintance 4 of_actors_pedtype 25 to_actors_pedtype 24
+077A: set_actor 13@ acquaintance 4 to_actors_pedtype 25
+// Dziêki tej zmianie, GSF spawnuj¹ce siê w mieœcie powinno wspieraæ GSF z poœcigu w walce
+0746: set_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 25
+0746: set_acquaintance 0 of_actors_pedtype 25 to_actors_pedtype 8
+
+// W poœcigu wezma udzia³ te¿ Savanny - wypada³oby w tym momencie za³adowaæ jej model
+0247: load_model #SAVANNA
+
+$166 = 100
+03C4: set_status_text $166 type 1 GXT 'BURRITO'
+
+00BC: show_text_highpriority GXT "ME1IB" time 5000 flag 1
+
+34@ = 0		// Kierowca Burrito wróci³ do auta?
+35@ = 0		// Liczba ataków, które ju¿ sie odby³y
+36@ = 0		// Policja zauwa¿y³a strzelaninê?
+38@ = 0		// Stan dojazdu Burrito do celu
+
+while 81B0:	  not car 11@ sphere 0 in_sphere 1609.24 -1501.19 13.54 radius 5.0 5.0 5.0 stopped
+	wait 0
+	if
+		34@ == 0
+	then
+		if
+			00DB:	actor 12@ in_car 11@
+		then
+			00AE: set_car 11@ traffic_behaviour_to 2
+			00AD: set_car 11@ max_speed_to 20.0
+			00A7: car 11@ drive_to 1647.21 -1535.86 13.54
+
+			33@ = 0		// Czas do nastêpnego ataku GS
+			34@ = 1
+		end
+	else
+		if
+			3 > 35@
+		then
+			if
+				33@ > 12500
+			then
+				if
+					35@ == 0
+				then
+					if
+						01AF:	car 11@ sphere 0 in_sphere 2340.1 -1639.3 15.1 radius 50.0 50.0 50.0
+					then
+						// Losowanie 1 z 2 dostêpnych miejsc spawnu poœcigu GS
+						0209: 36@ = random_int_in_ranges 0 2
+						if
+							36@ == 0
+						then
+							if
+								80C2:	not sphere_onscreen 2340.1 -1639.3 15.1 radius 3.0
+							then
+								// Miejsce #1
+								gosub @GroveChase1Pos1
+							else
+								if
+									80C2:	not sphere_onscreen 2344.9 -1678.2 12.8 radius 3.0
+								then
+									// Miejsce #2
+									gosub @GroveChase1Pos2
+								end
+							end
+						else
+							if
+								80C2:	not sphere_onscreen 2344.9 -1678.2 12.8 radius 3.0
+							then
+								// Miejsce #2
+								gosub @GroveChase1Pos2
+							else
+								if
+									80C2:	not sphere_onscreen 2340.1 -1639.3 15.1 radius 3.0
+								then
+									// Miejsce #1
+									gosub @GroveChase1Pos1
+								end
+							end
+						end
+
+					else
+						33@ = 0
+						35@ += 1
+					end
+				else
+					if
+						35@ == 1
+					then
+						0209: 36@ = random_int_in_ranges 0 2
+						if
+							36@ == 0
+						then
+							if
+								80C2:	not sphere_onscreen 2002.66 -1641.7 12.9 radius 3.0
+							then
+								// Miejsce #1
+								gosub @GroveChase2Pos1
+							else
+								if
+									80C2:	not sphere_onscreen 2042.2 -1624.5 13.0 radius 3.0
+								then
+									// Miejsce #2
+									gosub @GroveChase2Pos2
+								end
+							end
+						else
+							if
+								80C2:	not sphere_onscreen 2042.2 -1624.5 13.0 radius 3.0
+							then
+								// Miejsce #2
+								gosub @GroveChase2Pos2
+							else
+								if
+									80C2:	not sphere_onscreen 2002.66 -1641.7 12.9 radius 3.0
+								then
+									// Miejsce #1
+									gosub @GroveChase2Pos1
+								end
+							end
+						end
+					else
+						0209: 36@ = random_int_in_ranges 0 2
+						if
+							36@ == 0
+						then
+							if
+								80C2:	not sphere_onscreen 1846.3 -1611.0 12.8 radius 3.0
+							then
+								// Miejsce #1
+								gosub @GroveChase3Pos1
+							else
+								if
+									80C2:	not sphere_onscreen 1834.3 -1532.8 13.0 radius 3.0
+								then
+									// Miejsce #2
+									gosub @GroveChase3Pos2
+								end
+							end
+						else
+							if
+								80C2:	not sphere_onscreen 1834.3 -1532.8 13.0 radius 3.0
+							then
+								// Miejsce #2
+								gosub @GroveChase3Pos2
+							else
+								if
+									80C2:	not sphere_onscreen 1846.3 -1611.0 12.8 radius 3.0
+								then
+									// Miejsce #1
+									gosub @GroveChase3Pos1
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+
+		if
+			38@ == 0
+		then
+			if
+				01AF:	car 11@ sphere 0 in_sphere 1647.21 -1535.86 13.54 radius 5.0 5.0 10.0
+			then
+				// Definiujemy œcie¿kê, po której Burrito ma dojechaæ do gara¿u
+				05D6: clear_scmpath
+				05D7: add_point_to_scmpath 1634.44 -1527.74 13.59
+				05D7: add_point_to_scmpath 1617.46 -1516.78 13.57
+				05D7: add_point_to_scmpath 1609.24 -1501.19 13.54
+
+				06BB: set_actor 12@ drive_car 11@ speed 10.0 along_SCM_path
+
+				38@ = 1
+			end
+		end
+	end
+
+	if
+		36@ == 0
+	then
+		080E: get_actor $PLAYER_ACTOR ped_event_to 37@
+		if
+			37@ == 72		// EVENT_SEEN_COP
+		then
+			010E: set_player $PLAYER_CHAR minimum_wanted_level_to 2
+			36@ = 1
+		end
+	end
+
+	if
+		075C:	marker 65@ enabled
+	then
+		if
+			0119:	car 62@ wrecked
+		then
+			0164: disable_marker 65@
+		end
+	end
+
+	if
+		075C:	marker 69@ enabled
+	then
+		if
+			0119:	car 66@ wrecked
+		then
+			0164: disable_marker 69@
+		end
+	end
+
+	if
+		075C:	marker 76@ enabled
+	then
+		if
+			0119:	car 70@ wrecked
+		then
+			0164: disable_marker 76@
+		end
+	end
+
+	if
+		0118:	actor 8@ dead
+	then
+	    0164: disable_marker 65@
+	    0164: disable_marker 69@
+	    0164: disable_marker 76@
+		0164: disable_marker 20@
+	    0164: disable_marker 50@
+		00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if or
+		0118:	actor 12@ dead
+		0118:	actor 13@ dead
+	then
+	    0164: disable_marker 65@
+	    0164: disable_marker 69@
+	    0164: disable_marker 76@
+		0164: disable_marker 20@
+	    0164: disable_marker 50@
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	0227: $166 = car 11@ health
+	$166 -= 250
+	$166 *= 100
+	$166 /= 2750
+end
+
+:Garage_Sequence
+0164: disable_marker 65@
+0164: disable_marker 69@
+0164: disable_marker 76@
+0164: disable_marker 20@
+0164: disable_marker 50@
+0151: remove_status_text $166
+0110: clear_player $PLAYER_CHAR wanted_level
+01B4: set_player $PLAYER_CHAR can_move 0
+0992: set_player $PLAYER_CHAR weapons_scrollable 0
+
+016A: fade 0 time 2500
+gosub @Fading
+
+// Przejœcie do gara¿u
+0247: load_model #CIGAR
+0247: load_model #CAMERA
+04ED: load_animation "INE"
+04ED: load_animation "COP_AMBIENT"
+04ED: load_animation "SMOKING"
+038B: load_requested_models
+
+04BB: select_interior 1
+0860: link_actor $PLAYER_ACTOR to_interior 1
+
+0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 613.1 -3.8 1000.9
+0173: set_actor $PLAYER_ACTOR Z_angle_to 179.1
+01B2: give_actor $PLAYER_ACTOR weapon 43 ammo 10
+
+029B: 42@ = init_object #EST_CHAIR1 at 613.09 -8.36 999.8
+0566: link_object 42@ to_interior 1
+
+// Sztuczna kolizja
+0107: 43@ = create_object #LAESPRAYDOOR1 at 603.75 -7.75 1000.3
+0107: 44@ = create_object #LAESPRAYDOOR1 at 603.75 -12.25 1000.3
+0177: set_object 43@ Z_angle_to 180.0
+0177: set_object 44@ Z_angle_to 180.0
+0750: set_object 43@ visibility 0
+0750: set_object 44@ visibility 0
+
+0107: 80@ = create_object #CIGAR at 0.0 0.0 0.0
+
+0362: remove_actor 8@ from_car_and_place_at 613.1 -7.7 999.9
+0173: set_actor 8@ Z_angle_to 0.0
+01B9: set_actor 8@ armed_weapon_to 0
+0812: AS_actor 8@ perform_animation "SIT_TIEDUP" IFP "INE" framedelta 1000.0 loopA 1 lockX 0 lockY 0 lockF 0 time -1
+
+0362: remove_actor 12@ from_car_and_place_at 616.7 -8.2 1000.9
+0173: set_actor 12@ Z_angle_to 40.5
+01B9: set_actor 12@ armed_weapon_to 0
+0812: AS_actor 12@ perform_animation "COPLOOK_LOOP" IFP "COP_AMBIENT" framedelta 1000.0 loopA 1 lockX 0 lockY 0 lockF 0 time -1
+
+0362: remove_actor 13@ from_car_and_place_at 606.2 -5.2 1000.9
+0173: set_actor 13@ Z_angle_to 242.3
+01B9: set_actor 13@ armed_weapon_to 0
+070A: AS_actor 13@ attach_to_object 80@ offset 0.04 0.1 -0.02 on_bone 5 16 perform_animation "NULL" IFP_file "NULL" time 1
+0812: AS_actor 13@ perform_animation "M_SMKSTND_LOOP" IFP "SMOKING" framedelta 1000.0 loopA 1 lockX 0 lockY 0 lockF 0 time -1
+
+02EB: restore_camera_with_jumpcut
+
+00A6: destroy_car 10@
+00A6: destroy_car 11@
+
+// Modele i animacje z tej scenki mo¿emy zwolniæ od razu
+0249: release_model #CIGAR
+0249: release_model #CAMERA
+04EF: release_animation "INE"
+04EF: release_animation "COP_AMBIENT"
+04EF: release_animation "SMOKING"
+
+wait 750
+
+01B4: set_player $PLAYER_CHAR can_move 1
+016A: fade 1 time 2500
+gosub @Fading
+
+00BC: show_text_highpriority GXT "ME1IC" time 5000 flag 1
+
+while 84C5:	  not actor 8@ photographed
+	wait 0
+	// Jeœli gracz wypstryka ca³a kliszê zanim zrobi zdjêcie Sweetowi, misja siê nie powiedzie
+	041A: 34@ = actor $PLAYER_ACTOR weapon 43 ammo
+	if
+		0 >= 34@
+	then
+		00BC: show_text_highpriority GXT "ME1F6" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+end
+
+// Przy tej sekwencji (chyba) nie mo¿na zrobiæ niczego, co spowoduje niezaliczenie misji
+// Mo¿na po prostu zastosowaæ wait
+
+// Dla pewnoœci...
+0881: set_player $PLAYER_CHAR able_to_shoot_weapons 0
+wait 1500
+00BC: show_text_highpriority GXT "ME1TA" time 5000 flag 1
+wait 5000
+
+// Misja wykonana!
+00BA: show_text_styled GXT "M_PASSD" time 5000 style 1
+0394: play_music 1
+
+// Niech gracz nacieszy siê napisem Mission Passed - po przeskoczeniu do @Mission_Cleanup gracz ponownie stanie siê CJem
+wait 5000
+return
+
+:Mission_Cleanup
+0151: remove_status_text $166
+0151: remove_status_text $167
+
+0085: $166 = 92@
+0085: $167 = 93@
+
+// Reset stosunków miêdzy typami pedów
+0747: clear_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 26
+0747: clear_acquaintance 0 of_actors_pedtype 26 to_actors_pedtype 8
+0747: clear_acquaintance 3 of_actors_pedtype 24 to_actors_pedtype 8
+0747: clear_acquaintance 0 of_actors_pedtype 24 to_actors_pedtype 0
+0747: clear_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 0
+0747: clear_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 24
+0746: set_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 0
+0747: clear_acquaintance 3 of_actors_pedtype 8 to_actors_pedtype 0
+0747: clear_acquaintance 4 of_actors_pedtype 25 to_actors_pedtype 0
+0747: clear_acquaintance 4 of_actors_pedtype 25 to_actors_pedtype 24
+0747: clear_acquaintance 0 of_actors_pedtype 8 to_actors_pedtype 25
+0747: clear_acquaintance 0 of_actors_pedtype 25 to_actors_pedtype 8
+// Zwalnianie reszty modeli i animacji
+0249: release_model #FAM1
+0249: release_model #FAM2
+0249: release_model #FAM3
+0249: release_model #COLT45
+0249: release_model #TEC9
+0249: release_model #CHROMEGUN
+0249: release_model #GREENWOO
+0249: release_model #VOODOO
+0249: release_model #SAVANNA
+0249: release_model #COPCARLA
+0296: unload_special_actor 1
+04EF: release_animation "CAR"
+04EF: release_animation "GANGS"
+04EF: release_animation "PLAYIDLES"
+
+// Markery od 20@ do 25@ mo¿na (ale nie trzeba) usunaæ w pêtli
+// Oszczêdzi to trochê miejsca w skrypcie
+for 0@ = 0 to 5
+	// W tej pêtli 0@ przyjmie wartoœci od 0 do 5
+	0164: disable_marker 20@(0@,6i)
+end
+
+0164: disable_marker 50@
+0164: disable_marker 65@
+0164: disable_marker 69@
+0164: disable_marker 76@
+
+if
+	8112:	not wasted_or_busted
+then
+	016A: fade 0 time 5000
+	gosub @Fading
+else
+	while 8256:	  not player $PLAYER_CHAR defined
+		wait 0
+	end
+	016A: fade 0 time 0
+end
+
+0489: set_actor $PLAYER_ACTOR muted 0
+0992: set_player $PLAYER_CHAR weapons_scrollable 1
+0881: set_player $PLAYER_CHAR able_to_shoot_weapons 1
+07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 1
+0A20: disable_player $PLAYER_CHAR group_control_back 0
+0879: enable_gang_wars 1
+03C7: set_sensitivity_to_crime 1.0
+06D0: enable_emergency_traffic 1
+
+065C: release_decision_maker 90@
+065C: release_decision_maker 91@
+
+03CD: disable_car 11@ stuck_check
+03CD: disable_car 62@ stuck_check
+03CD: disable_car 66@ stuck_check
+03CD: disable_car 70@ stuck_check
+
+// Wykorzystamy fakt, ¿e misja korzysta z zaciemnienia na koncu - wszystkie obiekty mo¿na zespawnowaæ
+0108: destroy_object 43@
+0108: destroy_object 44@
+
+009B: destroy_actor 12@
+009B: destroy_actor 13@
+009B: destroy_actor 3@
+009B: destroy_actor 4@
+009B: destroy_actor 5@
+009B: destroy_actor 6@
+009B: destroy_actor 7@
+009B: destroy_actor 8@
+009B: destroy_actor 40@
+009B: destroy_actor 41@
+009B: destroy_actor 53@
+009B: destroy_actor 54@
+009B: destroy_actor 55@
+009B: destroy_actor 63@
+009B: destroy_actor 64@
+009B: destroy_actor 67@
+009B: destroy_actor 68@
+009B: destroy_actor 71@
+009B: destroy_actor 72@
+009B: destroy_actor 77@
+009B: destroy_actor 78@
+009B: destroy_actor 79@
+
+0164: disable_marker 109@
+0164: disable_marker 110@
+0164: disable_marker 111@
+
+0215: destroy_pickup 106@
+0215: destroy_pickup 107@
+0215: destroy_pickup 108@
+
+// Przywrócenie CJa
+gosub @RestorePlayerState
+
+00A6: destroy_car 10@
+00A6: destroy_car 11@
+00A6: destroy_car 51@
+00A6: destroy_car 52@
+00A6: destroy_car 62@
+00A6: destroy_car 66@
+00A6: destroy_car 70@
+
+wait 500
+016A: fade 1 time 1000
+00D8: mission_cleanup
+$ONMISSION = 0
+return
+
+:Mission_Failed
+00BA: show_text_styled GXT "M_FAIL" time 5000 style 1
+if
+	8112:	not wasted_or_busted
+then
+	for 0@ = 0 to 5
+		// W tej pêtli 0@ przyjmie wartoœci od 0 do 5
+		0164: disable_marker 20@(0@,6i)
+	end
+	0151: remove_status_text $166
+	0151: remove_status_text $167
+	wait 5000
+	// W przypadku œmierci Sweeta odpali siê krótka scenka
+	// tak jak ma to miejsce w niektórych misjach w GTA IV
+
+	// Ponowne sprawdzenie, czy gracz ¿yje (na wypadek gdyby zgina³ w ciagu tych 5 sekund)
+	if
+		8112:	not wasted_or_busted
+	then
+		if
+			056D:	actor 8@ defined
+		then
+			if
+				0118:	actor 8@ dead
+			then
+				// Dwie ró¿ne cutscenki, gdy gracz jest w aucie lub poza nim
+				if
+					0449:	actor $PLAYER_ACTOR in_a_car
+				then
+					// Cutscenka w aucie w³aczy siê tylko jeœli kompan gracza jest razem z nim w aucie (i ¿yje)
+					if and
+						8118:	not actor 13@ dead
+						0449:	actor 13@ in_a_car
+					then
+						016A: fade 0 time 1000
+						gosub @Fading
+
+						01B4: set_player $PLAYER_CHAR can_move 0
+						02A3: enable_widescreen 1
+
+						03C8: set_camera_directly_before_player
+						05BF: AS_actor 13@ look_at_actor $PLAYER_ACTOR -2 ms
+						05BF: AS_actor $PLAYER_ACTOR look_at_actor 13@ -2 ms
+
+						wait 500
+
+						016A: fade 1 time 1000
+						gosub @Fading
+						0707: start_scene_skip_to @Mission_Failed_Incar_Skip
+
+						wait 500
+
+						00BC: show_text_highpriority GXT "ME1F4" time 5000 flag 1
+						0967: actor 13@ move_mouth 10000 ms
+						// 3.5s powinno wystarczyæ na wypowiedzenie tej kwestii
+						wait 3500
+
+						:Mission_Failed_Incar_Skip
+						0701: end_scene_skip
+						00BE: text_clear_all
+						0968: actor 13@ stop_mouth
+
+						wait 500
+						016A: fade 0 time 1000
+						gosub @Fading
+					end
+				else
+					016A: fade 0 time 1000
+					gosub @Fading
+
+					01B4: set_player $PLAYER_CHAR can_move 0
+					02A3: enable_widescreen 1
+
+					for 0@ = 0 to 4
+						if
+							8118:	not actor 3@(0@,6i) dead
+						then
+							009B: destroy_actor 3@(0@,6i)
+						end
+					end
+
+					for 0@ = 0 to 2
+						if
+							8118:	not actor 53@(0@,3i) dead
+						then
+							009B: destroy_actor 53@(0@,3i)
+						end
+					end
+
+					if
+						8118:	not actor 40@ dead
+					then
+						009B: destroy_actor 40@
+					end
+					if
+						8118:	not actor 41@ dead
+					then
+						009B: destroy_actor 41@
+					end
+
+					04A5: get_dead_actor_pickup_coords 8@ store_to 73@ 74@ 75@
+					0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 73@ 74@ 75@
+					0639: AS_actor $PLAYER_ACTOR rotate_to_actor 8@
+					05BF: AS_actor $PLAYER_ACTOR look_at_actor 8@ -2 ms
+
+					03C8: set_camera_directly_before_player
+
+					wait 500
+
+					016A: fade 1 time 1000
+					gosub @Fading
+					0707: start_scene_skip_to @Mission_Failed_Onfoot_Skip
+
+					wait 2500
+
+					00BC: show_text_highpriority GXT "ME1F5" time 5000 flag 1
+					0967: actor $PLAYER_ACTOR move_mouth 10000 ms
+					wait 2000
+
+					:Mission_Failed_Onfoot_Skip
+					0701: end_scene_skip
+					00BE: text_clear_all
+					0968: actor $PLAYER_ACTOR stop_mouth
+
+					wait 500
+					016A: fade 0 time 1000
+					gosub @Fading
+				end
+			end
+		end
+	end
+end
+return
+
+:Fading
+while 016B:	  fading
+	wait 0
+end
+return
+
+
+:CreateMarkers
+// Tworzy markery nad g³owami GSF w alejce
+if
+	17@ == 0
+then
+	0187: 21@ = create_marker_above_actor 4@
+	0187: 22@ = create_marker_above_actor 5@
+	0187: 23@ = create_marker_above_actor 6@
+	0187: 24@ = create_marker_above_actor 7@
+
+	gosub @CreateSweetMarker
+
+	17@ = 1
+end
+return
+
+
+:CreateSweetMarker
+// Tworzy marker Sweeta (niebieski)
+0187: 25@ = create_marker_above_actor 8@
+07E0: set_marker 25@ type_to 1
+return
+
+
+:AttackPlayer
+// Ustawia nastawienie GSF do gracza oraz ka¿e im go atakowaæ
+
+// GS chwilowo musi nienawidzic gracza i jego kompanów
+// (zadzia³a tylko na gangsterach GSF zespawnowanych PO ustawieniu tych relacji)
+0746: set_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 0
+0746: set_acquaintance 4 of_actors_pedtype 8 to_actors_pedtype 24
+
+01B9: set_actor 3@ armed_weapon_to 22
+01B9: set_actor 4@ armed_weapon_to 22
+01B9: set_actor 5@ armed_weapon_to 22
+01B9: set_actor 8@ armed_weapon_to 22
+01B9: set_actor 40@ armed_weapon_to 22
+01B9: set_actor 41@ armed_weapon_to 22
+
+0350: set_actor 3@ maintain_position_when_attacked 0
+0350: set_actor 40@ maintain_position_when_attacked 0
+0350: set_actor 41@ maintain_position_when_attacked 0
+
+// Gangster grzebiacy w aucie musi najpierw spod niego wyjœæ
+0812: actor 40@ perform_animation "FIXN_CAR_OUT" IFP "CAR" framedelta 4.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+
+05E2: AS_actor 4@ kill_actor $PLAYER_ACTOR
+05E2: AS_actor 5@ kill_actor $PLAYER_ACTOR
+05E2: AS_actor 6@ kill_actor $PLAYER_ACTOR
+05E2: AS_actor 7@ kill_actor $PLAYER_ACTOR
+05E2: AS_actor 8@ kill_actor $PLAYER_ACTOR
+
+return
+
+:SavePlayerState
+// Zapis stanu gracza przed misja
+// Dziêki temu nic z ekwipunku CJa nie zostanie naruszone w trakcie misji
+
+00A0: store_actor $PLAYER_ACTOR position_to 113@ 114@ 115@
+0172: 116@ = actor $PLAYER_ACTOR Z_angle
+077E: get_active_interior_to 117@
+01C0: 112@ = player $PLAYER_CHAR wanted_level
+0226: 118@ = actor $PLAYER_ACTOR health
+04DD: 119@ = actor $PLAYER_ACTOR armour
+
+// Gracz dostaje pe³ny stan zdrowia oraz pancerza
+0653: 0@ = float_stat 24
+0092: 0@ = float 0@ to_integer
+0223: set_actor $PLAYER_ACTOR health_to 0@
+
+0945: get_player $PLAYER_CHAR max_armour_to 0@
+0851: set_actor $PLAYER_ACTOR decrease_health_by 119@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 0@
+
+// Zapis broni
+0@ = 0
+1@ = 1
+
+while 13 > 0@
+	04B8: get_weapon_data_from_actor $PLAYER_ACTOR weapon_group 1@ weapon 120@(0@,13i) ammo 133@(0@,13i) model 146@(0@,13i)
+	0@ += 1
+	1@ += 1
+end
+
+048F: actor $PLAYER_ACTOR remove_weapons
+
+return
+
+:RestorePlayerState
+// Przywrócenie stanu gracza sprzed misji
+
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to #NULL
+070D: rebuild_player $PLAYER_CHAR
+
+04BB: select_interior 117@
+0860: link_actor $PLAYER_ACTOR to_interior 117@
+03CB: set_rendering_origin_at 113@ 114@ 115@
+
+0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 113@ 114@ 115@
+0173: set_actor $PLAYER_ACTOR Z_angle_to 116@
+02EB: restore_camera_with_jumpcut
+
+010D: set_player $PLAYER_CHAR wanted_level_to 112@
+
+0223: set_actor $PLAYER_ACTOR health_to 118@
+
+// Jako ¿e nie istnieje opcode ustawiajacy iloœæ pancerza na konkretna iloœæ, musimy najpierw usunaæ pancerz gracza
+// a nastêpnie dodaæ oryginalna wartoœæ
+04DD: 0@ = actor $PLAYER_ACTOR armour
+0851: set_actor $PLAYER_ACTOR decrease_health_by 0@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 119@
+
+// Przywrócenie broni
+048F: actor $PLAYER_ACTOR remove_weapons
+0@ = 0
+
+while 13 > 0@
+	if
+		not 120@(0@,13i) == 0
+	then
+		0247: load_model 146@(0@,13i)
+		038B: load_requested_models
+
+		01B2: give_actor $PLAYER_ACTOR weapon 120@(0@,13i) ammo 133@(0@,13i)
+
+		0249: release_model 146@(0@,13i)
+	end
+	0@ += 1
+end
+
+return
+
+:NewPlayerInit
+0489: set_actor $PLAYER_ACTOR muted 1
+07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 0
+0879: enable_gang_wars 0
+return
+
+:AskBoutSweet
+// Pomocniczy gosub dla cutscenki pytania GSF o Sweeta
+02A3: enable_widescreen 1
+01B4: set_player $PLAYER_CHAR can_move 0
+0639: AS_actor $PLAYER_ACTOR rotate_to_actor 82@
+35@ += 1
+
+00BC: show_text_highpriority GXT "ME1T4" time 3000 flag 1
+
+32@ = 0
+while 3000 > 32@
+	wait 0
+end
+
+// Zapytano ju¿ wszystkich ¿yjacych cz³onków GF?
+if
+	002D:	35@ >= 39@
+then
+	00BC: show_text_highpriority GXT "ME1T5" time 2000 flag 1
+
+	32@ = 0
+	while 2000 > 32@
+		wait 0
+	end
+
+	018A: 20@ = create_checkpoint_at 2536.5 -1668.4 15.1
+else
+	// Próba wczytania plików MP3
+	if
+		35@ == 1
+	then
+		// Trik, dziêki któremu mamy 100% pewnoœci ¿e 81@ bêdzie równe -1 jeœli ³adowanie empetrójki siê nie powiedzie
+		if
+			0AAC: 81@ = load_audiostream "CLEO\INE\AUDIO\EXTRAS\ZAROBIONY_JESTEM.MP3"
+		then
+			0AAD: set_mp3 81@ perform_action 1
+		else
+			81@ = -1
+		end
+		00BC: show_text_highpriority GXT "ME1TB" time 5000 flag 1
+	else
+		if
+			0AAC: 81@ = load_audiostream "CLEO\INE\AUDIO\EXTRAS\PANIE_IDZ_PAN.MP3"
+		then
+			0AAD: set_mp3 81@ perform_action 1
+		else
+			81@ = -1
+		end
+		00BC: show_text_highpriority GXT "ME1TC" time 5000 flag 1
+	end
+
+    // Ustaliliœmy, ze jeœli aktor nie ma wykonywaæ ¿adnych animacji, 151@ bêdzie równe -1
+    if
+        not 151@ == -1
+    then
+        0618: assign_actor 82@ to_AS_pack 151@
+    end
+
+	// Czekamy do konca odtwarzania pliku MP3 lub animacji, jeœli wczytywanie MP3 siê nie powiedzie
+	if
+		81@ == -1
+	then
+		while 0611:	actor 82@ performing_animation "INVITE_NO"
+			wait 0
+		end
+	else
+		0AB9: get_mp3 81@ state_to 83@
+
+		while not 83@ == -1		// MP3 zatrzymane?
+			wait 0
+			0AB9: get_mp3 81@ state_to 83@
+		end
+
+		0AAE: release_mp3 81@
+	end
+	00BE: text_clear_all
+	wait 500
+end
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+return
+
+:RelocateBurrito
+// Obrócenie Burrito ty³em do domów
+// Wykonuje siê tylko wtedy, gdy Burrito nie jest widoczne na ekranie
+if and
+	19@ == 0
+	26@ == 1
+then
+	if and
+		82CA:	not car 10@ bounding_sphere_visible
+		82CA:	not car 11@ bounding_sphere_visible
+	then
+		0175: set_car 11@ Z_angle_to 89.2
+
+		0657: car 11@ open_door 4
+		0657: car 11@ open_door 5
+
+		0407: store_coords_to 45@ 46@ 47@ from_car 11@ with_offset 0.75 -3.0 0.0
+		0362: remove_actor 13@ from_car_and_place_at 45@ 46@ 47@
+		0173: set_actor 13@ Z_angle_to 262.0
+
+		19@ = 1
+	end
+end
+return
+
+:GroveFirstBackup
+// Spawn pierwszej fali wsparcia GSF
+009A: 85@ = create_actor_pedtype 8 model #FAM1 at 2493.3 -1671.4 13.3
+009A: 86@ = create_actor_pedtype 8 model #FAM2 at 2493.3 -1670.4 13.3
+009A: 87@ = create_actor_pedtype 8 model #FAM3 at 2494.2 -1672.9 13.3
+
+01B2: give_actor 85@ weapon 22 ammo 99999
+0223: set_actor 85@ health_to 200
+087E: set_actor 85@ weapon_droppable 0
+
+01B2: give_actor 86@ weapon 22 ammo 99999
+0223: set_actor 86@ health_to 200
+087E: set_actor 86@ weapon_droppable 0
+
+01B2: give_actor 87@ weapon 22 ammo 99999
+0223: set_actor 87@ health_to 200
+087E: set_actor 87@ weapon_droppable 0
+
+84@ = 1
+return
+
+
+:GroveSecondBackupPos1
+// Spawn pierwszej fali wsparcia GSF (pozycja #1)
+009A: 53@ = create_actor_pedtype 8 model #FAM1 at 2492.4 -1636.07 13.44
+009A: 54@ = create_actor_pedtype 8 model #FAM2 at 2492.5 -1635.0 13.4
+009A: 55@ = create_actor_pedtype 8 model #FAM3 at 2491.6 -1637.6 13.8
+
+:GroveSecondBackup_Common
+// Wspólny kod dla obu miejsc spawnu
+01B2: give_actor 53@ weapon 22 ammo 99999
+0223: set_actor 53@ health_to 200
+087E: set_actor 53@ weapon_droppable 0
+
+01B2: give_actor 54@ weapon 25 ammo 99999
+0223: set_actor 54@ health_to 200
+087E: set_actor 54@ weapon_droppable 0
+
+01B2: give_actor 55@ weapon 22 ammo 99999
+0223: set_actor 55@ health_to 200
+087E: set_actor 55@ weapon_droppable 0
+
+38@ = 1
+return
+
+:GroveSecondBackupPos2
+// Spawn pierwszej fali wsparcia GSF (pozycja #2)
+009A: 53@ = create_actor_pedtype 8 model #FAM1 at 2520.5 -1685.5 13.49
+009A: 54@ = create_actor_pedtype 8 model #FAM2 at 2521.3 -1685.57 13.49
+009A: 55@ = create_actor_pedtype 8 model #FAM3 at 2521.2 -1686.3 13.5
+jump @GroveSecondBackup_Common
+
+:GroveChase1Pos1
+// Spawn pierwszego auta œcigajacego Burrito (pozycja #1)
+00A5: 62@ = create_car #SAVANNA at 2340.1 -1639.3 15.1
+0175: set_car 62@ Z_angle_to 178.5
+
+:GroveChase1_Common
+// Wspólny kod dla obu miejsc spawnu
+00AE: set_car 62@ traffic_behaviour_to 2
+00AD: set_car 62@ max_speed_to 25.0
+053F: set_car 62@ tires_vulnerability 0
+072F: enable_car 62@ stuck_check_distance 1.0 time 2000 and_restore_if stuck 1 flipped 1 unk_place_on_road_properly 1 to_path -1
+
+0129: 63@ = create_actor_pedtype 25 model #FAM1 in_car 62@ driverseat
+01C8: 64@ = create_actor_pedtype 25 model #FAM2 in_car 62@ passenger_seat 0
+
+01B2: give_actor 64@ weapon 32 ammo 99999
+087E: set_actor 64@ weapon_droppable 0
+0713: actor 64@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+
+07F8: car 62@ follow_car 11@ radius 15.0
+0186: 65@ = create_marker_above_car 62@
+018B: set_marker 65@ radar_mode 1		// BLIPDISPLAY_MARKER_ONLY
+
+33@ = 0
+35@ += 1
+return
+
+:GroveChase1Pos2
+// Spawn pierwszego auta œcigajacego Burrito (pozycja #2)
+00A5: 62@ = create_car #SAVANNA at 2344.9 -1678.2 12.8
+jump @GroveChase1_Common
+
+:GroveChase2Pos1
+// Spawn drugiego auta œcigajacego Burrito (pozycja #1)
+00A5: 66@ = create_car #SAVANNA at 2002.66 -1641.7 12.9
+
+:GroveChase2_Common
+0175: set_car 66@ Z_angle_to 351.1
+00AE: set_car 66@ traffic_behaviour_to 2
+00AD: set_car 66@ max_speed_to 25.0
+053F: set_car 66@ tires_vulnerability 0
+072F: enable_car 66@ stuck_check_distance 1.0 time 2000 and_restore_if stuck 1 flipped 1 unk_place_on_road_properly 1 to_path -1
+
+0129: 67@ = create_actor_pedtype 25 model #FAM1 in_car 66@ driverseat
+01C8: 68@ = create_actor_pedtype 25 model #FAM3 in_car 66@ passenger_seat 0
+01C8: 77@ = create_actor_pedtype 25 model #FAM2 in_car 66@ passenger_seat 1
+
+01B2: give_actor 68@ weapon 32 ammo 99999
+01B2: give_actor 77@ weapon 32 ammo 99999
+087E: set_actor 68@ weapon_droppable 0
+087E: set_actor 77@ weapon_droppable 0
+0713: actor 68@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+0713: actor 77@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+
+07F8: car 66@ follow_car 11@ radius 15.0
+0186: 69@ = create_marker_above_car 66@
+018B: set_marker 69@ radar_mode 1		// BLIPDISPLAY_MARKER_ONLY
+
+33@ = 0
+35@ += 1
+return
+
+:GroveChase2Pos2
+// Spawn drugiego auta œcigajacego Burrito (pozycja #2)
+00A5: 66@ = create_car #SAVANNA at 2042.2 -1624.5 13.0
+jump @GroveChase2_Common
+
+:GroveChase3Pos1
+// Spawn trzeciego auta œcigajacego Burrito (pozycja #1)
+00A5: 70@ = create_car #GREENWOO at 1846.3 -1611.0 12.8
+0175: set_car 70@ Z_angle_to 89.5
+
+:GroveChase3_Common
+00AE: set_car 70@ traffic_behaviour_to 2
+00AD: set_car 70@ max_speed_to 25.0
+053F: set_car 70@ tires_vulnerability 0
+072F: enable_car 70@ stuck_check_distance 1.0 time 2000 and_restore_if stuck 1 flipped 1 unk_place_on_road_properly 1 to_path -1
+
+0129: 71@ = create_actor_pedtype 25 model #FAM2 in_car 70@ driverseat
+01C8: 72@ = create_actor_pedtype 25 model #FAM3 in_car 70@ passenger_seat 0
+01C8: 78@ = create_actor_pedtype 25 model #FAM2 in_car 70@ passenger_seat 1
+01C8: 79@ = create_actor_pedtype 25 model #FAM2 in_car 70@ passenger_seat 2
+
+01B2: give_actor 72@ weapon 32 ammo 99999
+01B2: give_actor 78@ weapon 32 ammo 99999
+01B2: give_actor 79@ weapon 32 ammo 99999
+087E: set_actor 72@ weapon_droppable 0
+087E: set_actor 78@ weapon_droppable 0
+087E: set_actor 79@ weapon_droppable 0
+0713: actor 72@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+0713: actor 78@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+0713: actor 79@ driveby_actor -1 car 11@ point 0.0 0.0 0.0 radius 150.0 8 1 firing_rate 90
+
+07F8: car 70@ follow_car 11@ radius 15.0
+0186: 76@ = create_marker_above_car 70@
+018B: set_marker 76@ radar_mode 1		// BLIPDISPLAY_MARKER_ONLY
+
+085A: spawn_emergency_vehicle_model #COPCARLA on_street_nearest_to 1805.04 -1615.73 13.35
+
+35@ += 1
+return
+
+:GroveChase3Pos2
+// Spawn trzeciego auta œcigajacego Burrito (pozycja #2)
+00A5: 70@ = create_car #GREENWOO at 1834.3 -1532.8 13.0
+0175: set_car 70@ Z_angle_to 159.1
+jump @GroveChase3_Common
+
+:AltShootoutScene
+// Sub z kodem alternatywnego przebiegu misji, gdzie strzelanina rozpoczyna siê wczeœniej
+// Ten fragment misji znajduje siê w gosubie, poniewa¿ mo¿e zostaæ odpalony w ró¿nych etapach misji
+
+// Resetujemy licznik zabójstw - przy jego pomocy sprawdzimy, ilu gangsterów zabi³ gracz
+0297: reset_player $PLAYER_CHAR destroyed_model_counters
+
+// Podkrêcamy temperaturê - niech przed Burrito rozpocznie siê strzelanina
+05E2: AS_actor 40@ kill_actor 13@
+if
+	26@ == 1
+then
+	05E2: AS_actor 41@ kill_actor 12@
+else
+	05E2: AS_actor 41@ kill_actor $PLAYER_ACTOR
+end
+05E2: AS_actor 3@ kill_actor $PLAYER_ACTOR
+// Przy strzelaninie tylko gracz mo¿e uszkodziæ oba auta - inaczej bardzo szybko wybuchn¹
+02AA: set_car 10@ immune_to_nonplayer 1
+02AA: set_car 11@ immune_to_nonplayer 1
+053F: set_car 11@ tires_vulnerability 0
+0224: set_car 11@ health_to 3000
+0633: AS_actor 13@ exit_car
+
+29@ = 0 // Licznik zabitych gangsterów
+
+while 3 > 29@
+	wait 0
+	gosub @RelocateBurrito
+	0806: get_player $PLAYER_CHAR kills_from_last_checkpoint 29@
+
+	if
+		26@ == 0
+	then
+		if
+			01B0:	car 11@ sphere 0 in_sphere 2494.73 -1655.42 12.89 radius 5.0 5.0 5.0 stopped
+		then
+			03CD: disable_car 11@ stuck_check
+
+			26@ = 1
+		end
+	end
+
+	if
+		0118:	actor 8@ dead
+	then
+		0164: disable_marker 25@
+		00BC: show_text_highpriority GXT "ME1F1" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if or
+		0119:	car 11@ wrecked
+		0118:	actor 13@ dead
+	then
+		00BC: show_text_highpriority GXT "ME1F3" time 5000 flag 1
+		jump @Mission_Failed
+	end
+
+	if
+		875C:	not marker 25@ enabled
+	then
+		if
+			0364:	actor 8@ spotted_actor $PLAYER_ACTOR
+		then
+			// Debug, bez ScrDebug opcode nie ma efektu
+			0662: printstring "SPOTTED SWEET"
+			// Gracz zauwa¿y³ Sweeta, tworzymy marker
+			gosub @CreateSweetMarker
+			00BC: show_text_highpriority GXT "ME1J1" time 5000 flag 1
+		end
+	end
+end
+
+0687: clear_actor 8@ task
+01B9: set_actor 8@ armed_weapon_to 0
+05C4: AS_actor 8@ hands_up -1 ms
+return
+
+:ManageDroppedWeapons
+// Sprawdza, czy cz³onkowie GSF noszacy shotguna/tec9 zginêli i spawnuje przy nich upuszczona bron
+if
+	100@ == 0
+then
+	if
+		056D:	actor 6@ defined
+	then
+		if
+			0118:	actor 6@ dead
+		then
+			04A5: get_dead_actor_pickup_coords 6@ store_to 103@ 104@ 105@
+			032B: 106@ = create_weapon_pickup #TEC9 group 3 ammo 200 at 103@ 104@ 105@
+			03DC: 109@ = create_marker_above_pickup 106@
+			0168: set_marker 109@ size 2
+
+			if and
+				101@ == 0
+				102@ == 0
+			then
+				00BC: show_text_highpriority GXT "ME1J2" time 5000 flag 1
+			end
+			100@ = 1
+		end
+	end
+end
+
+if
+	101@ == 0
+then
+	if
+		056D:	actor 7@ defined
+	then
+		if
+			0118:	actor 7@ dead
+		then
+			04A5: get_dead_actor_pickup_coords 7@ store_to 103@ 104@ 105@
+			032B: 107@ = create_weapon_pickup #CHROMEGUN group 3 ammo 25 at 103@ 104@ 105@
+			03DC: 110@ = create_marker_above_pickup 107@
+			0168: set_marker 110@ size 2
+
+			if and
+				100@ == 0
+				102@ == 0
+			then
+				00BC: show_text_highpriority GXT "ME1J2" time 5000 flag 1
+			end
+			101@ = 1
+		end
+	end
+end
+
+if
+	102@ == 0
+then
+	if
+		056D:	actor 54@ defined
+	then
+		if
+			0118:	actor 54@ dead
+		then
+			04A5: get_dead_actor_pickup_coords 54@ store_to 103@ 104@ 105@
+			032B: 108@ = create_weapon_pickup #CHROMEGUN group 3 ammo 25 at 103@ 104@ 105@
+			03DC: 111@ = create_marker_above_pickup 108@
+			0168: set_marker 111@ size 2
+
+			if and
+				100@ == 0
+				101@ == 0
+			then
+				00BC: show_text_highpriority GXT "ME1J2" time 5000 flag 1
+			end
+			102@ = 1
+		end
+	end
+end
+
+return

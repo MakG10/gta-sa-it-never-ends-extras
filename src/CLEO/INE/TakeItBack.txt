@@ -1,0 +1,2113 @@
+{$CLEO .cm}
+:Mission
+gosub @NewPlayerInit
+0050:  gosub  @Mission_Start  
+if 
+  0112:  wasted_or_busted  // mission only  
+then
+  0050:  gosub  @Mission_Failed  
+end
+0050:  gosub  @Mission_Cleanup
+end_thread
+
+
+:Mission_Start
+thread  'TakeItBk'
+$ONMISSION = 1
+
+0A48: enable_menu_access_in_widescreen_mode 1 
+0860: link_actor $PLAYER_ACTOR to_interior 0
+select_interior 0     
+
+03CB: set_rendering_origin_at 1607.19995 -1213.09998 570.0
+03CB: set_rendering_origin_at 2138.30005 -1022.20001 570.0
+
+fade 0 1000
+gosub @Fading
+
+0247: load_model 125
+0247: load_model 123
+0247: load_model 108
+0247: load_model 109
+0247: load_model 110
+0247: load_model 280
+0247: load_model 347
+0247: load_model 358
+0247: load_model 402
+0247: load_model 422
+0247: load_model 497
+0247: load_model 562
+0247: load_model 576
+0247: load_model 599
+0247: load_model 1225
+0247: load_model 1550
+0247: load_model 3260
+0247: load_model #COLT45
+0247: load_model #AK47
+0247: load_model #ROCKETLA
+0247: load_model #TEARGAS
+0247: load_model #CELLPHONE
+
+0247: load_model #FREIGHT
+0247: load_model #STREAK
+0247: load_model #FREIFLAT
+0247: load_model #STREAKC
+0247: load_model #FREIBOX
+
+
+04ED: load_animation "CRACK"
+04ED: load_animation "CARRY"
+038B: load_requested_models
+
+07C0: load_path 907
+07C0: load_path 908
+07C0: load_path 909
+
+03CF: load_wav 23000 as 1
+
+0390: load_txd_dictionary "ine"
+038F: load_texture "gmz" as 10
+
+0390: load_txd_dictionary "LD_BEAT"
+038F: load_texture "left" as 11
+
+0A48: enable_menu_access_in_widescreen_mode 1 
+
+
+// ======== Zmiana skina gracza ========
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to 125
+070D: rebuild_player $PLAYER_CHAR
+
+gosub @SavePlayerState
+
+01B2: give_actor $PLAYER_ACTOR weapon 23 ammo 99999
+//
+
+00C0: set_current_time 8 0
+
+// ======== Scenka #1 - widok z gory, odtwarzanie kwestii z INE, zblizenie do gracza ========
+fade 1 5000
+
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+
+00A1: put_actor $PLAYER_ACTOR at 2143.5 -1040.59961 70.9
+0173: set_actor $PLAYER_ACTOR Z_angle_to 180.0
+
+// Vagos lezacy na ziemi
+060A: create_decision_maker_type 0 store_to 88@
+
+009A: 1@ = create_actor_pedtype 9 model 108 at 2144.0 -1038.19922 70.5
+0173: set_actor 1@ Z_angle_to 174.018
+0812: task_play_anim_non_interruptable 1@ anim "CRCKIDLE2" ifp "CRACK" framedelta 1000.0 loop 1 lockX 0 lockY 0 lockF 0 time -1
+07BC: set_actor 1@ decision_maker_to 88@
+//
+
+// Buffalo przed hotelem
+00A5: 0@ = create_car 402 at 2228.1001 -1162.90002 25.7
+0175: set_car 0@ Z_angle_to 90.0
+//
+
+
+015F: set_camera_position 1607.19995 -1213.09998 570.0 rotation 0.0 0.0 0.0
+0160: set_camera_point_at 1607.19995 -1213.19998 100.0 switchstyle 2
+
+03D1: play_wav 1
+
+0707: start_scene_skip_to @Cutscene1_Skip
+
+while true
+    wait 0
+    if
+        03D2:   wav 1 ended
+    then
+        // Kwestie z INE z misji "Heist" - "Skok"
+        00BC: show_text_highpriority GXT 'M4T28' time 2000 flag 1
+        0AAC: 311@ = load_audiostream "CLEO\INE\audio\cj\m4t28.mp3"
+        
+        if 311@ > 0
+        then 0AAD: set_audiostream 311@ perform_action 1
+        end
+        
+        wait 1900   
+        
+        if 311@ > 0
+        then 0AAE: release_audiostream 311@
+        end
+ 
+
+        00BC: show_text_highpriority GXT 'M4T29' time 4000 flag 1
+
+        0AAC: 311@ = load_audiostream "CLEO\INE\audio\man\m4t29.mp3"
+        if 311@ > 0
+        then 0AAD: set_audiostream 311@ perform_action 1
+        end
+        
+        wait 3300
+        
+        if 311@ > 0
+        then 0AAE: release_audiostream 311@
+        end
+        
+        break
+    end
+end
+
+
+0936: set_camera 1607.19995 -1213.09998 570.0 position_to 2138.30005 -1022.20001 570.0 time 10000 smooth_transition 1
+0920: point_camera 1607.19995 -1213.19998 100.0 transverse_to 2138.30005 -1022.30001 70.0 time 10000 smooth_transition 1
+
+0930: lock_camera_position 1
+092F: lock_camera_target_point 1
+
+while true
+    wait 0
+    if
+        8933:   not camera_position_manipulated
+    then
+        0936: set_camera 2138.30005 -1022.20001 570.0 position_to 2143.5 -1034.80005 70.0 time 6000 smooth_transition 1
+        0920: point_camera 2138.30005 -1022.30001 70.0 transverse_to 2143.5 -1040.59961 70.9 time 6000 smooth_transition 1
+        
+        break
+    end
+end
+
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 4000
+    then
+        0729: AS_actor $PLAYER_ACTOR hold_cellphone 1
+        
+        // Dialogi
+        32@ = 0
+        while true
+            wait 0
+            if and
+                32@ > 2000
+                32@ < 5000
+            then
+                00BC: show_text_highpriority GXT 'ME3T3' time 100 flag 1
+            end
+            
+            if and
+                32@ > 5000
+                32@ < 8000
+            then
+                00BC: show_text_highpriority GXT 'ME3T4' time 100 flag 1
+            end
+            
+            if and
+                32@ > 8000
+                32@ < 10500
+            then
+                00BC: show_text_highpriority GXT 'ME3T5' time 100 flag 1
+            end
+            
+            if
+                32@ > 10500
+            then
+                break
+            end
+        end
+        
+        0729: AS_actor $PLAYER_ACTOR hold_cellphone 0
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                32@ > 1500
+            then
+                0639: AS_actor $PLAYER_ACTOR rotate_to_actor 1@
+                00BC: show_text_highpriority GXT 'ME3T6' time 2000 flag 1
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 2000
+                    then
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+0701: end_scene_skip
+
+:Cutscene1_Skip
+0729: AS_actor $PLAYER_ACTOR hold_cellphone 0
+0AAE: release_audiostream 311@
+
+// ======== Zadanie #1 - zabicie lezacego Vagosa ========
+01B4: set_player $PLAYER_CHAR can_move 1
+02A3: enable_widescreen 0
+02EB: restore_camera_with_jumpcut
+0930: lock_camera_position 0
+092F: lock_camera_target_point 0
+0936: set_camera 1607.19995 -1213.09998 570.0 position_to 2138.30005 -1022.20001 570.0 time 0 smooth_transition 1
+0920: point_camera 1607.19995 -1213.19998 100.0 transverse_to 2138.30005 -1022.30001 70.0 time 0 smooth_transition 1
+
+00BC: show_text_highpriority GXT 'ME3I1' time 4000 flag 1
+
+// Marker nad Vagosem
+0187: 2@ = create_marker_above_actor 1@
+//
+
+while true
+    wait 0
+    if or
+        0118:   actor 1@ dead
+        8184:   not actor 1@ health >= 1 // wymagane, bo opcode 0812 powoduje, ze aktor mimo straty calego HP dalej jest animowany = jest uwazany za zywego
+    then
+        0687: clear_actor 1@ task
+        0164: disable_marker 2@
+        break
+    end
+end
+
+// ======== Zadanie #2 - podniesienie snajperki ========
+032B: 3@ = create_weapon_pickup #SNIPER group 3 ammo 30 at 2142.80005 -1042.19995 70.9
+03DC: 4@ = create_marker_above_pickup 3@
+
+while true
+    wait 0
+    
+    00BC: show_text_highpriority GXT 'ME3I1' time 10 flag 1
+    
+    if
+        0214:   pickup 3@ picked_up
+    then
+        00BC: show_text_highpriority GXT 'ME3I3' time 5000 flag 1
+        break
+    end
+end
+
+// ======== Scenka #2 - pokazanie hotelu Jefferson, z ktorego wyjdzie cel ========
+
+// ======== Zadanie #3 - oczekiwanie na wyjscie celu i zabicie go ========
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 8000
+    then
+        009A: 6@ = create_actor_pedtype 4 model 123 at 2232.69995 -1159.59998 25.3
+        0173: set_actor 6@ Z_angle_to 90.003
+        
+        07A1: set_walk_speed 4
+        05CB: AS_actor 6@ enter_car 0@ as_driver -1 ms
+
+        
+        0187: 7@ = create_marker_above_actor 6@
+        00BC: show_text_highpriority GXT 'ME3I4' time 2000 flag 1
+        
+        break
+    end
+end
+
+
+8@ = 0 // Flaga - czy Da Nang Boy juz ucieka
+while true
+    wait 0
+    if
+        0118:   actor 6@ dead
+    then
+        0164: disable_marker 7@
+        break
+    end
+    
+    if and
+        00DB:   actor 6@ in_car 0@
+        02E0:   actor $PLAYER_ACTOR firing_weapon
+        8@ == 0
+    then
+        00A8: set_car 0@ to_psycho_driver
+        00A7: car 0@ drive_to 1011.70001 -1448.19995 13.5
+        
+        8@ = 1
+    end
+    
+    if
+        8104:   not actor $PLAYER_ACTOR near_actor 6@ radius 200.0 200.0 200.0 sphere 0
+    then
+        jump @Mission_Failed
+    end
+end
+
+// ======== Scenka #2 - Vagosi na dachu =========
+:Scene2
+
+fade 0 1000
+gosub @Fading
+
+01B4: set_player $PLAYER_CHAR can_move 0
+02A3: enable_widescreen 1
+
+00A1: put_actor $PLAYER_ACTOR at 2143.5 -1040.59961 70.0
+0173: set_actor $PLAYER_ACTOR Z_angle_to 170.0
+01B9: set_actor $PLAYER_ACTOR armed_weapon_to 34
+
+0635: AS_actor $PLAYER_ACTOR aim_at_actor 6@ 3000 ms
+
+// Vagosi na dachu
+009A: 10@ = create_actor_pedtype 9 model 108 at 2183.69995 -1028.0 70.3
+0639: AS_actor 10@ rotate_to_actor $PLAYER_ACTOR
+0350: set_actor 10@ maintain_position_when_attacked 1
+
+009A: 11@ = create_actor_pedtype 9 model 109 at 2184.69995 -1031.90002 70.3
+0639: AS_actor 11@ rotate_to_actor $PLAYER_ACTOR
+0350: set_actor 11@ maintain_position_when_attacked 1
+
+009A: 12@ = create_actor_pedtype 9 model 110 at 2182.69995 -1031.19995 70.3
+0639: AS_actor 12@ rotate_to_actor $PLAYER_ACTOR
+0350: set_actor 12@ maintain_position_when_attacked 1
+
+009A: 13@ = create_actor_pedtype 9 model 109 at 2183.19995 -1029.69995 70.3
+0639: AS_actor 13@ rotate_to_actor $PLAYER_ACTOR
+0350: set_actor 13@ maintain_position_when_attacked 1
+//
+
+// Uzbrojenie Vagosow
+01B2: give_actor 10@ weapon 30 ammo 300
+01B9: set_actor 10@ armed_weapon_to 30
+
+01B2: give_actor 11@ weapon 30 ammo 300
+01B9: set_actor 11@ armed_weapon_to 30
+
+01B2: give_actor 12@ weapon 30 ammo 300
+01B9: set_actor 12@ armed_weapon_to 30
+
+01B2: give_actor 13@ weapon 30 ammo 300
+01B9: set_actor 13@ armed_weapon_to 30
+//
+
+0936: set_camera 2142.5 -1040.49961 70.6 position_to 2140.5 -1040.29961 71.2 time 6000 smooth_transition 2
+0920: point_camera 2183.69995 -1028.0 70.3 transverse_to 2183.69995 -1028.0 70.3 time 6000 smooth_transition 2
+
+0930: lock_camera_position 1
+092F: lock_camera_target_point 1
+
+fade 1 2000
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 2000
+    then
+        00BC: show_text_highpriority GXT 'ME3T7' time 1000 flag 1
+    end
+    
+    if
+        32@ > 3000
+    then
+        0639: AS_actor $PLAYER_ACTOR rotate_to_actor 10@
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                32@ > 1000
+            then
+                0922: set_camera_zoom_from 50.0 to 20.0 timelimit 500 smooth_transition 1
+                0931: lock_camera_zoom 1
+                
+                0635: AS_actor 10@ aim_at_actor $PLAYER_ACTOR 10000 ms
+                0635: AS_actor 11@ aim_at_actor $PLAYER_ACTOR 10000 ms
+                0635: AS_actor 12@ aim_at_actor $PLAYER_ACTOR 10000 ms
+                0635: AS_actor 13@ aim_at_actor $PLAYER_ACTOR 10000 ms
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 2000
+                    then
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+    
+// ======== Zadanie #4 - ucieczka z dachow ========
+02A3: enable_widescreen 0
+
+015A: restore_camera
+0930: lock_camera_position 0
+092F: lock_camera_target_point 0
+0931: lock_camera_zoom 0
+
+// Vagosi na ulicy i dachach rzucajacy molotovem, gazem lzawiacym i granatami
+009A: 20@ = create_actor_pedtype 9 model 108 at 2125.19995 -1000.20001 59.0 // molotov1
+0173: set_actor 20@ Z_angle_to 170.002
+
+009A: 21@ = create_actor_pedtype 9 model 110 at 2121.6001 -998.79999 58.2 // molotov2
+0173: set_actor 21@ Z_angle_to 170.002
+
+009A: 22@ = create_actor_pedtype 9 model 110 at 2104.30005 -1007.40002 58.6 // teargas
+0173: set_actor 22@ Z_angle_to 94.002
+
+009A: 23@ = create_actor_pedtype 9 model 110 at 2083.80005 -1002.40002 54.4 // grenade
+0173: set_actor 23@ Z_angle_to 90.002
+//
+
+// Uzbrojenie Vagosow
+01B2: give_actor 20@ weapon 18 ammo 300
+01B9: set_actor 20@ armed_weapon_to 18
+
+01B2: give_actor 21@ weapon 18 ammo 300
+01B9: set_actor 21@ armed_weapon_to 18
+
+01B2: give_actor 22@ weapon 17 ammo 300
+01B9: set_actor 22@ armed_weapon_to 17
+
+01B2: give_actor 23@ weapon 16 ammo 300
+01B9: set_actor 23@ armed_weapon_to 16
+//
+
+
+// Sytuacja z tym plikiem MP3 wyglada tak - ten plik byl juz w podstawowej wersji INE i zeby nie wgrywac nowego,
+// skorzystamy z niego, ale wymaga lekkiej modyfikacji - musi byc odtworzony od 15 sekundy.
+// CLEO nie posiada mozliwosci ustawienia offsetu odtwarzania mp3, wiec puscimy go teraz i po 15 sekundach go zapauzujemy, a w odpowiednim momemencie wznowimy.
+0AAC: 110@ = load_audiostream "CLEO\INE\audio\music\mission5.mp3"
+if
+    110@ > 0
+then
+    0AAD: set_audiostream 110@ perform_action 1
+    0ABC: set_audiostream 110@ volume 0.0
+end
+//
+
+32@ = 0
+33@ = 0 // Uzywamy tego timera do zapauzowania muzyki w odpowiednim momencie
+99@ = 0 // Obecny zaliczony checkpoint
+100@ = 0 // Flaga instrukcji
+while true
+    wait 0
+    
+    // Kamera z gory
+    00A0: store_actor $PLAYER_ACTOR position_to 101@ 102@ 103@   
+    
+    101@ += 10.0
+    102@ -= 20.0
+    103@ += 40.0
+    015F: set_camera_position 101@ 102@ 103@ rotation 0.0 0.0 0.0
+
+    101@ -= 10.0
+    102@ += 20.1
+    103@ -= 40.0
+    0160: set_camera_point_at 101@ 102@ 103@ switchstyle 2
+    //
+    
+    // Instrukcja i odliczanie
+    if
+        100@ == 0
+    then
+        00BC: show_text_highpriority GXT 'ME3I5' time 3000 flag 1
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                32@ > 3000
+            then
+                00BA: show_text_styled GXT 'RACE2' time 1100 style 4
+                097A: play_audio_at 0.0 0.0 0.0 event 1056 
+                wait 1000
+                00BA: show_text_styled GXT 'RACE3' time 1100 style 4
+                097A: play_audio_at 0.0 0.0 0.0 event 1056 
+                wait 1000
+                00BA: show_text_styled GXT 'RACE4' time 1100 style 4
+                097A: play_audio_at 0.0 0.0 0.0 event 1056 
+                wait 1000
+                00BA: show_text_styled GXT 'RACE5' time 800 style 4
+                097A: play_audio_at 0.0 0.0 0.0 event 1057
+                
+                05E2: AS_actor 10@ kill_actor $PLAYER_ACTOR
+                05E2: AS_actor 11@ kill_actor $PLAYER_ACTOR
+                05E2: AS_actor 12@ kill_actor $PLAYER_ACTOR
+                05E2: AS_actor 13@ kill_actor $PLAYER_ACTOR
+                
+                break
+            end
+        end
+        
+        01B4: set_player $PLAYER_CHAR can_move 1
+        100@ = 1 // nie uruchamiaj wiecej powyzszego kodu
+    end
+    //
+    
+    // Checkpoint #1
+    if
+        99@ == 0
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2147.0 -1033.0 radius 3.0 3.0
+        then
+            99@ = 1
+        end
+    end
+    
+    // Checkpoint #2
+    if
+        99@ == 1
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2139.6 -1022.9 radius 3.0 3.0
+        then
+            99@ = 2
+        end
+    end
+    
+    // Checkpoint #3
+    if
+        99@ == 2
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2124.8 -1016.1 radius 3.0 3.0
+        then
+            05E2: AS_actor 20@ kill_actor $PLAYER_ACTOR
+            05E2: AS_actor 21@ kill_actor $PLAYER_ACTOR
+            
+            0948: create_explosion_at 2133.6 -1012.1 66.2 type 11 camera_shake 5.0
+            
+            99@ = 3
+        end
+    end
+    
+    // Checkpoint #4
+    if
+        99@ == 3
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2106.3 -1009.3 radius 3.0 3.0
+        then
+            05E2: AS_actor 22@ kill_actor $PLAYER_ACTOR
+            
+            0948: create_explosion_at 2112.0 -1018.9 64.8 type 11 camera_shake 5.0
+            
+            99@ = 4
+        end
+    end
+    
+    // Checkpoint #5
+    if
+        99@ == 4
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2089.9 -1003.8 radius 3.0 3.0
+        then
+            05E2: AS_actor 23@ kill_actor $PLAYER_ACTOR   
+            
+            99@ = 5
+        end
+    end
+    
+    // Checkpoint #6
+    if
+        99@ == 5
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point 2067.8 -1000.0 radius 3.0 3.0
+        then
+            99@ = 6
+            break
+        end
+    end
+    
+    // Zapauzuj muzyke po 15 sekundach
+    if
+        33@ > 15500
+    then
+        if 110@ > 0
+        then 0AAD: set_mp3 110@ perform_action 2
+        end
+    end
+end
+
+
+// ======== Scenka #3 - gracz skacze z dachu, Vagos wystrzela z bazooki ========
+:Scene3
+fade 1 1
+02A3: enable_widescreen 1
+01B4: set_player $PLAYER_CHAR can_move 0
+
+015F: set_camera_position 2056.6 -1014.7 55.6 rotation 0.0 0.0 0.0
+0160: set_camera_point_at 2065.1 -966.5 52.1 switchstyle 2
+
+00A1: put_actor $PLAYER_ACTOR at 2067.8 -1000.0 57.8
+0173: set_actor $PLAYER_ACTOR Z_angle_to 90.0
+
+// Vagos z bazooka
+009A: 14@ = create_actor_pedtype 9 model 109 at 2046.1 -961.7 50.0
+0639: AS_actor 14@ rotate_to_actor $PLAYER_ACTOR
+
+01B2: give_actor 14@ weapon 35 ammo 10
+01B9: set_actor 14@ armed_weapon_to 35
+02E2: set_actor 14@ weapon_accuracy_to 100
+//
+
+// Pozbycie sie poprzednich Vagosow
+01C2: remove_references_to_actor 10@
+01C2: remove_references_to_actor 11@
+01C2: remove_references_to_actor 12@
+01C2: remove_references_to_actor 13@
+
+01C2: remove_references_to_actor 20@
+01C2: remove_references_to_actor 21@
+01C2: remove_references_to_actor 22@
+01C2: remove_references_to_actor 23@
+//
+
+// Muzyka
+if
+    110@ > 0
+then
+    0ABC: set_audiostream 110@ volume 0.5
+    0AAD: set_mp3 110@ perform_action 3
+end
+//
+
+05D3: AS_actor $PLAYER_ACTOR goto_point 2060.7 -999.2 56.4 mode 6 time -1 ms
+
+32@ = 0
+100@ = 0 // etap skokow
+while true
+    wait 0
+    
+    if
+        32@ > 1000
+    then
+        0707: start_scene_skip_to @Cutscene3_Skip
+    end
+    
+    if and
+        100@ == 0
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 2064.7 -999.2 radius 1.5 1.5
+    then
+        0668: AS_actor 14@ rotate_and_shoot_at 2064.7 -999.2 56.4 1000 ms
+        100@ = 1
+    end
+    
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 2064.7 -999.2 radius 1.0 1.0
+        100@ == 1
+    then
+        015D: set_gamespeed 0.5
+        
+        05BC: AS_actor $PLAYER_ACTOR jump 1
+        05D3: AS_actor $PLAYER_ACTOR goto_point 2041.7 -1000.3 52.3 mode 6 time -1 ms
+        
+        0635: AS_actor 14@ aim_at_actor $PLAYER_ACTOR 10000 ms
+        
+        100@ = 2
+    end
+    
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 2049.6 -1000.3 radius 1.0 1.0
+        100@ == 2
+    then
+        015F: set_camera_position 2045.1 -957.4 51.3 rotation 0.0 0.0 0.0
+        0160: set_camera_point_at 2037.9 -993.1 46.3 switchstyle 2
+        
+        0668: AS_actor 14@ rotate_and_shoot_at 2049.6 -1000.3 53.4 1000 ms
+
+        05BC: AS_actor $PLAYER_ACTOR jump 1
+        05D3: AS_actor $PLAYER_ACTOR goto_point 2036.4 -1010.8 39.1 mode 6 time -1 ms
+        
+        0635: AS_actor 14@ aim_at_actor $PLAYER_ACTOR 10000 ms
+        
+        100@ = 3
+    end
+    
+    if and
+        00EC:   actor $PLAYER_ACTOR sphere 0 near_point 2041.9 -1005.2 radius 0.5 0.5
+        100@ == 3
+    then
+        015D: set_gamespeed 0.2
+        
+        015F: set_camera_position 2035.2 -1013.5 50.3 rotation 0.0 0.0 0.0
+        0160: set_camera_point_at 2047.5 -991.8 50.9 switchstyle 2
+        
+        0668: AS_actor 14@ rotate_and_shoot_at 2041.7 -1002.8 49.0 1000 ms
+        
+        06A5: AS_actor $PLAYER_ACTOR jump_forward stay_on_ground 2000 ms and_stands_back
+        
+        break
+    end
+end
+
+0701: end_scene_skip
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 1400
+    then
+        015D: set_gamespeed 1.0
+        break
+    end
+end
+
+jump @Cutscene3_End
+
+:Cutscene3_Skip
+015D: set_gamespeed 1.0
+0AAE: release_audiostream 110@
+
+00A1: put_actor $PLAYER_ACTOR at 2036.7706 -1009.4568 39.7422
+0173: set_actor $PLAYER_ACTOR Z_angle_to 133.0
+
+:Cutscene3_End
+01C2: remove_references_to_actor 14@
+
+// ======== Zadanie #4 - pojechanie do miejsca z kasa ========
+02EB: restore_camera_with_jumpcut
+02A3: enable_widescreen 0
+01B4: set_player $PLAYER_CHAR can_move 1
+
+018A: 30@ = create_checkpoint_at 1535.0 -1479.90002 9.5
+03BC: 29@ = create_sphere_at 1535.0 -1479.90002 9.3 radius 1.0 // Stworzenie sfery jest konieczne, gdyz to miejsce jest pod ziemia i parametr sphere 1 w petli moze utworzyc sfere w innym miejscu np. na dachu
+
+00BC: show_text_highpriority GXT 'ME3I6' time 5000 flag 1
+
+while true
+    wait 0
+    if
+        00ED:   actor $PLAYER_ACTOR sphere 0 near_point 1535.0 -1479.90002 radius 1.0 1.0 on_foot
+    then
+        01B4: set_player $PLAYER_CHAR can_move 0
+        
+        0164: disable_marker 30@
+        03BD: destroy_sphere 29@
+        
+        fade 0 1500
+        gosub @Fading
+        break
+    end
+end
+
+// ======== Scenka #3 - gracz wyciaga torby z pieniedzmi i pojawiaja sie Vagosi, ktorzy kradna kase i uciekaja ========
+:Scene4
+0395: clear_area 1 at 1535.0 -1479.90002 9.5 radius 50.0
+02A3: enable_widescreen 1
+
+// Ustawienie gracza
+00A1: put_actor $PLAYER_ACTOR at 1535.0 -1479.60002 8.8
+0173: set_actor $PLAYER_ACTOR Z_angle_to 180.003
+01B9: set_actor $PLAYER_ACTOR armed_weapon_to 0
+//
+
+// Elegy - samochod gracza
+00A5: 14@ = create_car 562 at 1531.30005 -1476.69995 9.3
+0175: set_car 14@ Z_angle_to 0.0
+0229: set_car 14@ primary_color_to 0 secondary_color_to 0
+//
+
+// Tornado - samochod Vagosow
+00A5: 16@ = create_car 576 at 1534.59998 -1450.19995 13.1
+0175: set_car 16@ Z_angle_to 180.0
+0229: set_car 16@ primary_color_to 15 secondary_color_to 15
+//
+
+// Vagosi
+0129: 17@ = create_actor_pedtype 9 model 109 in_car 16@ driverseat
+01C8: 18@ = create_actor_pedtype 9 model 110 in_car 16@ passenger_seat 0
+//
+
+// Torba z kasa
+029B: 22@ = init_object 1550 at 1535.09998 -1480.19998 8.9
+0453: set_object 22@ XY_rotation 0.0 0.0 angle 0.0
+08E9: set_object 22@ liftable 1
+//
+
+//
+
+// Kamera
+015F: set_camera_position 1535.0 -1481.90002 10.0 rotation 0.0 0.0 0.0
+0160: set_camera_point_at 1534.59998 -1450.19995 11.1 switchstyle 2
+//
+
+
+00A7: car 16@ drive_to 1534.89941 -1470.69922 9.3
+04BA: set_car 16@ speed_to 4.0
+00AD: set_car 16@ max_speed_to 6.0
+
+fade 1 1000
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 500
+    then
+        07C9: AS_actor $PLAYER_ACTOR walk_to_object 22@ then_lift_and_hold_in_hands
+        
+        while true
+            wait 0
+            if
+                32@ > 2500
+            then
+                0679: put_camera_on_car 16@ with_offset 0.0 -0.9 0.5 rotation 0.0 30.0 0.0 tilt 0.0 switchstyle 2
+                0173: set_actor $PLAYER_ACTOR Z_angle_to 0.0
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+while true
+    wait 0
+    if
+        01AE:   car 16@ sphere 0 near_point 1534.89941 -1470.69922 radius 2.0 2.0 stopped
+    then
+        // Kamera
+        015F: set_camera_position 1534.0 -1481.90002 10.0 rotation 0.0 0.0 0.0
+        0160: set_camera_point_at 1537.59998 -1450.19995 10.0 switchstyle 2
+        //
+        
+        0633: AS_actor 17@ exit_car
+        0633: AS_actor 18@ exit_car
+        
+        01B2: give_actor 17@ weapon 22 ammo 300
+        01B9: set_actor 17@ armed_weapon_to 22
+        
+        01B2: give_actor 18@ weapon 22 ammo 300
+        01B9: set_actor 18@ armed_weapon_to 22
+        
+        0635: AS_actor 17@ aim_at_actor $PLAYER_ACTOR 100000 ms
+        0635: AS_actor 18@ aim_at_actor $PLAYER_ACTOR 100000 ms
+        
+        32@ = 0
+        while true
+            wait 0
+            if and
+                80DB:   not actor 17@ in_car 16@
+                80DB:   not actor 18@ in_car 16@
+                32@ > 2500
+            then
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+
+// ======== Zadanie #6 - gracz musi oddac kase ========
+//02EB: restore_camera_with_jumpcut
+0930: lock_camera_position 0
+092F: lock_camera_target_point 0
+
+02A3: enable_widescreen 0
+01B4: set_player $PLAYER_CHAR can_move 0 // gracz wciaz nie moze sie ruszac
+
+// AS Pack dla Vagosa podnoszacego torbe
+0407: store_coords_to 71@ 72@ 73@ from_car 16@ with_offset 1.8 1.8 0.0
+0407: store_coords_to 81@ 82@ 83@ from_car 16@ with_offset 1.7 -3.4 0.0
+0407: store_coords_to 91@ 92@ 93@ from_car 16@ with_offset 0.5 -3.4 0.0
+
+
+0615: define_AS_pack_begin 23@
+    05D3: AS_actor -1 goto_point 1535.09998 -1478.7 8.9 mode 4 time 60000 ms
+    07C9: AS_actor -1 walk_to_object 22@ then_lift_and_hold_in_hands
+    05D3: AS_actor -1 goto_point 71@ 72@ 73@ mode 4 time 60000 ms
+    05D3: AS_actor -1 goto_point 81@ 82@ 83@ mode 4 time 60000 ms
+    05D3: AS_actor -1 goto_point 91@ 92@ 93@ mode 4 time 20000 ms
+    05D4: AS_actor -1 rotate_angle 180.0
+0616: define_AS_pack_end 23@
+//
+
+100@ = 0 // Czy Vagos zostal przydzielony do AS_pack
+32@ = 0
+while true
+    wait 0
+    if and
+        32@ > 0
+        32@ < 3000
+    then
+        00BC: show_text_highpriority GXT 'ME3T8' time 100 flag 1
+    end
+    
+    if and
+        8737:   not actor $PLAYER_ACTOR lifting_object 22@
+        100@ == 0
+    then
+        0618: assign_actor 18@ to_AS_pack 23@
+        100@ = 1
+    end
+    
+    if
+        08D0:   should_skip_cutscene
+    then
+        015D: set_gamespeed 6.0
+    end
+    
+    // Instrukcja
+    if and
+        0737:   actor $PLAYER_ACTOR lifting_object 22@
+        32@ > 3500
+    then
+        00BC: show_text_highpriority GXT 'ME3I7' time 50 flag 1
+    end
+    //
+    
+    if and
+        00E1:   player 0 pressed_key 15
+        0737:   actor $PLAYER_ACTOR lifting_object 22@
+    then
+        0605: actor $PLAYER_ACTOR perform_animation "PUTDWN" IFP "CARRY" framedelta 4.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                8611:   not actor $PLAYER_ACTOR performing_animation "PUTDWN"
+            then
+                01BC: put_object 22@ at 1535.09998 -1478.9 8.9
+                break
+            end
+            
+            if and
+                32@ > 500
+                32@ < 1500
+            then
+                00BC: show_text_highpriority GXT 'ME3T9' time 1000 flag 1
+            end
+        end
+    end
+    
+    if and
+        00F0:   actor 18@ 0 near_point 91@ 92@ radius 2.0 2.0 stopped_on_foot
+        0737:   actor 18@ lifting_object 22@
+    then
+        08A6: set_car 16@ door 1 rotation_to 90.0
+        
+        33@ = 0
+        while true
+            wait 0
+            if
+                33@ > 1000
+            then
+                0605: actor 18@ perform_animation "PUTDWN" IFP "CARRY" framedelta 4.0 loop 0 lockX 0 lockY 0 lockF 0 time -1
+                
+                while true
+                    wait 0
+                    if
+                        8611:   not actor 18@ performing_animation "PUTDWN"
+                    then
+                        0108: destroy_object 22@
+                        08A6: set_car 16@ door 1 rotation_to 0.0
+                        
+                        05CA: AS_actor 18@ enter_car 16@ passenger_seat 0 time 10000
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break            
+    end
+end
+
+    
+// ======== Zadanie #7 - quick time event ========
+015D: set_gamespeed 1.0
+0687: clear_actor 17@ task
+
+00BC: show_text_highpriority GXT 'ME3T10' time 2500 flag 1
+
+32@ = 0
+33@ = 0
+while true
+    wait 0
+    if
+        32@ > 2500
+    then
+        00A0: store_actor $PLAYER_ACTOR position_to 109@ 110@ 111@
+        0668: AS_actor 17@ rotate_and_shoot_at 109@ 110@ 111@ 3000 ms
+        
+        015D: set_gamespeed 0.1
+
+        while true
+            wait 0
+            if      
+                02D6:   actor 17@ fires_weapon 22 in_rectangle_cornerA 1530.89941 -1460.69922 cornerB 1540.89941 -1500.69922
+            then
+                015D: set_gamespeed 1.0
+
+                // Efekty specjalne - zmieniamy kolor zaciemniania na czerwony, aby zasymulowac trafienie gracza z pistoletu
+                // Po 300 ms przerywamy zaciemnianie, aby uniknac ekranu w pelni czerwonego
+                0169: set_fade_color_RGB 255 0 0
+                fade 0 500
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 300
+                    then
+                        fade 1 1
+                        0169: set_fade_color_RGB  0 0 0
+                        
+                        0223: set_actor $PLAYER_ACTOR health_to 0
+                        break
+                    end
+                end
+                
+                break
+            end
+            
+            if
+                00E1:   player 0 pressed_key 0
+            then
+                //05D4: AS_actor $PLAYER_ACTOR rotate_angle 90.0
+                0173: set_actor $PLAYER_ACTOR Z_angle_to 90.0
+                06A5: AS_actor $PLAYER_ACTOR jump_forward stay_on_ground 1000 ms and_stands_back
+                
+                break
+            end
+            
+            // Wyswietlanie podpowiedzi - migajaca strzalka
+            if
+                33@ >= 20
+            then
+                038D: draw_texture 11 position 288.0 390.0 size 64.0 64.0 RGBA 200 0 0 230
+            end
+            
+            if
+                33@ >= 40
+            then
+                33@ = 0
+            end
+        end
+        
+        break
+    end
+end
+
+
+015F: set_camera_position 1532.0 -1481.40002 9.0 rotation 0.0 0.0 0.0
+0160: set_camera_point_at 1540.89941 -1470.69922 9.3 switchstyle 2
+
+015D: set_gamespeed 1.0
+
+32@ = 0
+while true
+    wait 100
+    00A0: store_actor $PLAYER_ACTOR position_to 109@ 110@ 111@
+    0668: AS_actor 17@ rotate_and_shoot_at 109@ 110@ 111@ 1000 ms
+    
+    if
+        32@ > 1000
+    then
+        break
+    end
+end
+        
+// ======== Zadanie #8 - gracz musi gonic Vagosow ========
+01B4: set_player $PLAYER_CHAR can_move 1
+02EB: restore_camera_with_jumpcut
+
+015D: set_gamespeed 1.0
+
+0687: clear_actor 17@ task
+05CB: AS_actor 17@ enter_car 16@ as_driver 3000 ms
+
+while true
+    wait 0
+    if
+        00DB:   actor 17@ in_car 16@
+    then
+        break
+    end
+end
+
+00BC: show_text_highpriority GXT 'ME3I8' time 5000 flag 1
+
+// Marker nad samochodem
+0186: 60@ = create_marker_above_car 16@
+07E0: set_marker 60@ type_to 1
+//
+
+// Przypisanie samochodu Vagosow do sciezki RRR
+05EB: assign_car 16@ to_path 907
+06FD: set_car 16@ speed_on_path_to 1.0
+02AC: set_car 16@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+//
+
+64@ = 0 // Czy Vagosi maja wyrzucac beczki?
+while true
+    wait 500
+    
+    // Dostosowywanie predkosci Vagosow w zaleznosci od odleglosci od gracza.
+    00A0: store_actor $PLAYER_ACTOR position_to 71@ 72@ 73@
+    00AA: store_car 16@ position_to 81@ 82@ 83@
+    050A: 70@ = distance_between_XYZ 71@ 72@ 73@ and_XYZ 81@ 82@ 83@ // odleglosc pomiedzy punktami (graczem, a samochodem Vagosow)
+    
+    70@ /= 180.0
+    71@ = 1.4
+    0061: 71@ -= 70@
+    
+    06FD: set_car 16@ speed_on_path_to 71@
+    //
+    
+    // Jezeli gracz za bardzo oddali sie od Vagosow, to koniec
+    if
+        8202:   not actor $PLAYER_ACTOR near_car 16@ radius 180.0 180.0 sphere 0
+    then
+        00BC: show_text_highpriority GXT 'ME3F1' time 5000 flag 1
+        jump @Mission_Failed
+    end
+    
+    
+    // Jezeli Vagosi wjechali do tunelu...
+    if
+        01AD:   car 16@ sphere 0 near_point -838.6 -1371.5 radius 10.0 10.0
+    then
+        break
+    end
+    
+    
+    // Aktywacja wyrzucania beczek w tunelu oraz na przedmiesciach
+    if
+        64@ == 0
+    then
+        if or
+            01AD:   car 16@ sphere 0 near_point 596.78 -1149.56 radius 10.0 10.0
+            01AD:   car 16@ sphere 0 near_point -484.8068 -863.986 radius 30.0 30.0
+        then
+            00BC: show_text_highpriority GXT 'ME3I9' time 4000 flag 1
+            
+            64@ = 1
+            32@ = 0
+        end
+    end
+    
+    // Dezaktywacja wyrzucania beczek
+    if or
+        01AD:   car 16@ sphere 0 near_point -131.3 -1309.5 radius 10.0 10.0
+        01AD:   car 16@ sphere 0 near_point -677.7985 -1016.6777 radius 20.0 20.0
+    then
+        64@ = 0
+    end
+    
+    
+    // Wyrzucanie beczek BOOM BOOM BOOM
+    // Beczka wylatuje co 2,5 sekundy
+    if and
+        64@ == 1
+        32@ > 2500
+    then
+        0407: store_coords_to 51@ 52@ 53@ from_car 16@ with_offset 0.0 -4.0 -0.2
+
+        029B: 65@ = init_object 1225 at 51@ 52@ 53@
+        0453: set_object 65@ XY_rotation 0.0 90.0 angle 90.0
+        
+        32@ = 0
+    end
+end
+
+// ======== Scenka #4 - gracz i Vagosi wjezdzaja do tunelu - pojawiaja sie pociagi z dwoch stron i Vagos (kierowca)wyskakuje z wozu ========
+0164: disable_marker 60@
+
+02A3: enable_widescreen 1
+01B4: set_player $PLAYER_CHAR can_move 0
+
+:Scene5
+fade 0 0
+
+0AAC: 110@ = load_audiostream "CLEO\INE\audio\music\mission5.mp3"
+0AAD: set_audiostream 110@ perform_action 1
+0ABC: set_audiostream 110@ volume 1.0
+
+06D7: enable_train_traffic 0
+03CB: set_rendering_origin_at -826.1 -1272.3 76.0
+
+// Usuniecie poprzednich samochodow i postaci i utworzenie ich na nowo dla wiekszej precyzji
+0792: disembark_instantly_actor $PLAYER_ACTOR
+00A6: destroy_car 14@
+00A6: destroy_car 16@
+009B: destroy_actor 17@
+009B: destroy_actor 18@
+
+0395: clear_area 1 at -826.1 -1272.3 76.0 radius 200.0
+//
+
+// Pociagi
+06D8: 1@ = create_train_at -826.1 -1272.3 76.0 type 13 direction 1
+06D8: 2@ = create_train_at -986.0 -1504.2 83.1 type 4 direction 0
+//
+
+// Samochod gracza
+00A5: 14@ = create_car 562 at -825.1 -1294.5 79.0
+0175: set_car 14@ Z_angle_to 172.0
+0229: set_car 14@ primary_color_to 0 secondary_color_to 0
+//
+
+// Samochod Vagosow
+00A5: 16@ = create_car 576 at -828.7 -1322.9 82.4
+0175: set_car 16@ Z_angle_to 172.0
+0229: set_car 16@ primary_color_to 15 secondary_color_to 15
+//
+
+// Vagosi
+0129: 17@ = create_actor_pedtype 4 model 109 in_car 16@ driverseat
+01C8: 18@ = create_actor_pedtype 9 model 110 in_car 16@ passenger_seat 0
+
+    // Zeby kierowca, ktorego bedziemy gonic przypadkiem nie zginal.
+    // Drugi nas nie obchodzi, niech ginie.
+    02AB: set_actor 17@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+//
+
+fade 1 0     
+
+036A: put_actor $PLAYER_ACTOR in_car 14@
+02EB: restore_camera_with_jumpcut
+
+//
+06DD: set_train 1@ speed 45.0
+06DC: set_train 1@ acc 30.0
+
+06DD: set_train 2@ speed 45.0
+06DC: set_train 2@ acc 15.0
+
+05EB: assign_car 16@ to_path 908
+05EB: assign_car 14@ to_path 909
+//
+
+0679: put_camera_on_car 14@ with_offset -0.05 -0.95 0.5 rotation 0.0 10.0 0.0 tilt 0.0 switchstyle 2
+fade 1 500
+
+60@ = 0 // Kamera ID
+32@ = 0
+while true
+    wait 0
+    if
+        01AD:   car 16@ sphere 0 near_point -865.5548 -1458.7648 radius 6.0 6.0
+    then
+        067E: put_camera_on_actor 17@ offset 2.0 5.0 0.0 target_actor 17@ tilt 0.0 switchstyle 2
+        
+        0687: clear_actor 17@ task
+        039E: set_actor 17@ locked 0 while_in_car
+        
+        0622: AS_actor 17@ bail_car 16@
+        
+        05EC: release_car 16@ from_path
+        02AC: set_car 16@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+        
+        // Sprawdzamy, czy samochod uderzyl w pociag
+        while true
+            wait 1
+            if
+                09CB:   vehicle 16@ colliding_with_vehicle 2@
+            then
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 200
+                    then
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+    
+    // Zmiany kamery
+    if and
+        32@ > 2000
+        60@ == 0
+    then
+        0679: put_camera_on_car 16@ with_offset 0.0 -1.15 0.6 rotation 0.0 10.0 0.0 tilt 0.0 switchstyle 2
+        60@ = 1
+    end
+    
+    if and
+        32@ > 4000
+        60@ == 1
+    then
+        0679: put_camera_on_car 14@ with_offset -0.1 -0.95 0.5 rotation 0.0 10.0 0.0 tilt 0.0 switchstyle 2
+        60@ = 2
+    end
+    
+    if
+        01AD:   car 16@ sphere 0 near_point -865.5548 -1458.7648 radius 15.0 15.0
+    then
+        015D: set_gamespeed 0.2
+        0679: put_camera_on_car 16@ with_offset 0.0 -1.15 0.6 rotation 0.0 10.0 0.0 tilt 0.0 switchstyle 2
+    end
+end
+
+
+
+{wait 2000
+fade 1 500
+wait 1000
+01B4: set_player $PLAYER_CHAR can_move 1
+                    
+06DD: set_train 1@ speed 45.0
+06DC: set_train 1@ acc 30.0
+
+06DD: set_train 2@ speed 45.0
+06DC: set_train 2@ acc 15.0
+
+//04BA: set_car 14@ speed_to 15.0
+//04BA: set_car 16@ speed_to 30.0
+05EB: assign_car 16@ to_path 908
+05EB: assign_car 14@ to_path 909}
+
+
+// ======== Zadanie #9 - gracz musi wyskoczyc z pojazdu zanim zderzy sie z pociagiem ========
+
+// Ustawiamy pozycje samochodu na mniej wiecej przed pociagiem, zeby uniknac losowsci zderzenia,
+// ktora moglaby doprowadzic do np. przesuniecia samochodu pod sciane i uderzylby gracza wyskakujacego z samochodu
+00AB: put_car 16@ at -861.2 -1449.5 95.5
+0175: set_car 16@ Z_angle_to 151.5
+
+0679: put_camera_on_car 14@ with_offset -0.1 -0.95 0.5 rotation 0.0 10.0 0.0 tilt 0.0 switchstyle 2
+01B4: set_player $PLAYER_CHAR can_move 1
+
+015D: set_gamespeed 0.3
+
+while true
+    wait 0
+    00BC: show_text_highpriority GXT 'ME3I10' time 50 flag 1
+    
+    if or
+        09CB:   vehicle 14@ colliding_with_vehicle 16@
+        09CB:   vehicle 14@ colliding_with_vehicle 2@
+    then
+        if
+            00DB:   actor $PLAYER_ACTOR in_car 14@
+        then
+            015D: set_gamespeed 1.0
+            
+            0169: set_fade_color_RGB 255 0 0
+            fade 0 500
+            
+            32@ = 0
+            while true
+                wait 0
+                if
+                    32@ > 300
+                then
+                    fade 1 1
+                    0169: set_fade_color_RGB  0 0 0
+                    
+                    0223: set_actor $PLAYER_ACTOR health_to 0
+                    01B4: set_player $PLAYER_CHAR can_move 0
+                    0792: disembark_instantly_actor $PLAYER_ACTOR
+                    break
+                end
+            end
+            
+            break
+        end
+        
+        break
+    end
+end
+
+
+// ======== Zadanie #10 - gracz musi zabic uciekajacego Vagosa ========
+02A3: enable_widescreen 0
+01B4: set_player $PLAYER_CHAR can_move 1
+02AB: set_actor $PLAYER_ACTOR immunities BP 0 FP 1 EP 1 CP 0 MP 0 // Na wypadek, gdyby cos tam sie zglitchowalo i gracz oberwalby od eksplozji, mimo ze wyskoczyl z pojazdu na czas
+
+015D: set_gamespeed 1.0
+02EB: restore_camera_with_jumpcut
+
+// Uciekajacy Vagos
+00A1: put_actor 17@ at -885.5243 -1482.6808 96.3509
+0223: set_actor 17@ health_to 500
+02AB: set_actor 17@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+0946: set_actor 17@ actions_uninterupted_by_weapon_fire 1
+
+060A: load_char_decision_maker 0 store_to 91@
+060B: set_char_decision_maker 17@ to 91@
+
+0187: 60@ = create_marker_above_actor 17@
+//
+
+0615: define_AS_pack_begin 24@
+    05D3: AS_actor -1 goto_point -964.2062 -1504.6167 87.419 mode 6 time -1 ms
+    05D3: AS_actor -1 goto_point -975.6204 -1585.6746 77.0421 mode 6 time -1 ms
+    05C4: AS_actor -1 hands_up 900000 ms
+0616: define_AS_pack_end 24@
+
+0618: assign_actor 17@ to_AS_pack 24@
+
+
+00BC: show_text_highpriority GXT 'ME3I11' time 5000 flag 1
+
+32@ = 0
+while true
+    wait 0
+    if and
+        8119:   not car 14@ wrecked
+        32@ > 1000
+    then
+        020B: explode_car 14@
+    end   
+    
+    if
+        0118:   actor 17@ dead
+    then
+        0164: disable_marker 60@
+        break
+    end
+end
+
+fade 0 2000
+gosub @Fading
+
+// ======== Scenka #7 - gracz dochodzi do samochodu, rozmawia przez telefon ========
+06D7: enable_train_traffic 1
+02A3: enable_widescreen 1
+01B4: set_player $PLAYER_CHAR can_move 0
+02AB: set_actor $PLAYER_ACTOR immunities BP 0 FP 0 EP 0 CP 0 MP 0
+01B9: set_actor $PLAYER_ACTOR armed_weapon_to 0
+
+00A1: put_actor $PLAYER_ACTOR at -1080.59998 -1642.19995 76.0
+0173: set_actor $PLAYER_ACTOR Z_angle_to 110.0
+
+// Samochod - Bobcat
+00A5: 30@ = create_car 422 at -1088.5 -1645.6 76.5
+0175: set_car 30@ Z_angle_to 270.0
+//
+
+// Kamera
+015F: set_camera_position -1092.1 -1645.0 77.0 rotation 0.0 0.0 0.0
+0160: set_camera_point_at -1080.59998 -1642.19995 77.0 switchstyle 2
+//
+
+wait 500
+fade 1 1000
+
+05D3: AS_actor $PLAYER_ACTOR goto_point -1087.80005 -1643.90002 76.4 mode 4 time 15000 ms
+
+while true
+    wait 0
+    if
+        00F0:   actor $PLAYER_ACTOR 0 near_point -1087.80005 -1643.90002 radius 2.0 2.0 stopped_on_foot
+    then
+        0729: AS_actor $PLAYER_ACTOR hold_cellphone 1
+
+        32@ = 0
+        while true
+            wait 0
+            if and
+                32@ > 2000
+                32@ < 5000
+            then
+                00BC: show_text_highpriority GXT 'ME3T13' time 4000 flag 1
+                
+                33@ = 0
+                while true
+                    wait 0
+                    if
+                        33@ > 4000
+                    then
+                        00BC: show_text_highpriority GXT 'ME3T14' time 2500 flag 1
+                        break
+                    end
+                end
+            end
+            
+            if
+                32@ > 8500
+            then
+                0729: AS_actor $PLAYER_ACTOR hold_cellphone 0
+                
+                33@ = 0
+                while true
+                    wait 0
+                    if
+                        33@ > 1500
+                    then
+                        05D4: AS_actor $PLAYER_ACTOR rotate_angle 0.0
+                        
+                        00BC: show_text_highpriority GXT 'ME3T15' time 1000 flag 1
+                        
+                        33@ = 0
+                        while true
+                            wait 0
+                            if
+                                33@ > 1000
+                            then
+                                00A5: 40@ = create_car 497 at -1076.8 -1565.6 110.0
+                                0175: set_car 40@ Z_angle_to 170.0
+                                0229: set_car 40@ primary_color_to 0 secondary_color_to 1
+                                0129: 42@ = create_actor_pedtype 6 model 280 in_car 40@ driverseat
+                                
+                                00A5: 41@ = create_car 497 at -1121.7 -1674.0 95.0
+                                0175: set_car 41@ Z_angle_to 310.0
+                                0229: set_car 41@ primary_color_to 0 secondary_color_to 1
+                                0129: 43@ = create_actor_pedtype 6 model 280 in_car 41@ driverseat
+
+                                0825: set_helicopter 40@ instant_rotor_start
+                                0825: set_helicopter 41@ instant_rotor_start
+                                
+                                0727: set_heli 40@ behavior_to_police_heli_and_follow_actor -1 follow_car 30@ radius 5.0
+                                0727: set_heli 41@ behavior_to_police_heli_and_follow_actor -1 follow_car 30@ radius 10.0
+                                //0780: heli 40@ hover_above actor $PLAYER_ACTOR car -1 altitude 100.0 110.0
+                                //0780: heli 41@ hover_above actor $PLAYER_ACTOR car -1 altitude 90.0 100.0
+                                
+                                0160: set_camera_point_at -1076.8 -1575.6 110.0 switchstyle 1
+                                05CB: AS_actor $PLAYER_ACTOR enter_car 30@ as_driver 2000 ms                                
+                                
+                                33@ = 0
+                                while true
+                                    wait 0
+                                    if
+                                        33@ > 3000
+                                    then
+                                        break
+                                    end
+                                end
+                                
+                                break
+                            end
+                        end
+                        
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+// ======== Zadanie #11 - gracz musi uciec przed policja ========     
+02A3: enable_widescreen 0
+01B4: set_player $PLAYER_CHAR can_move 1
+039E: set_actor $PLAYER_ACTOR locked 1 while_in_car   
+
+010D: set_player $PLAYER_CHAR wanted_level_to 3        
+
+00A5: 70@ = create_car 599 at -1126.7 -1647.3 76.8
+0129: 73@ = create_actor_pedtype 6 model 280 in_car 70@ driverseat
+0175: set_car 70@ Z_angle_to 270.0
+0397: enable_car 70@ siren 1
+07F8: car 70@ follow_car 30@ radius 10.0    
+00AD: set_car 70@ max_speed_to 60.0
+
+00BC: show_text_highpriority GXT 'ME3I12' time 5000 flag 1
+
+99@ = 0
+while true
+    wait 0
+    // Kamera z gory
+    00A0: store_actor $PLAYER_ACTOR position_to 101@ 102@ 103@   
+    
+    101@ -= 20.0
+    102@ += 30.0
+    103@ += 40.0
+    015F: set_camera_position 101@ 102@ 103@ rotation 0.0 0.0 0.0
+
+    101@ += 20.0
+    102@ -= 30.1
+    103@ -= 40.0
+    0160: set_camera_point_at 101@ 102@ 103@ switchstyle 2
+    //
+    
+    if
+        02BF:   car 30@ sunk
+    then
+        jump @Mission_Failed
+    end
+    
+    // Checkpoint #1
+    if
+        99@ == 0
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -1077.9 -1647.3 radius 5.0 5.0
+        then
+            99@ = 1
+        end
+    end
+    
+    // Checkpoint #2
+    if
+        99@ == 1
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -1032.2 -1663.6 radius 5.0 5.0
+        then
+            99@ = 2
+        end
+    end
+    
+    // Checkpoint #3
+    if
+        99@ == 2
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -992.7 -1719.9 radius 5.0 5.0
+        then
+            99@ = 3
+        end
+    end
+    
+    // Checkpoint #4
+    if
+        99@ == 3
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -955.8 -1720.3 radius 5.0 5.0
+        then
+            99@ = 4
+        end
+    end
+    
+    // Checkpoint #5
+    if
+        99@ == 4
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -895.5 -1725.5 radius 5.0 5.0
+        then
+            00A5: 71@ = create_car 599 at -868.4 -1694.4 78.0
+            0129: 74@ = create_actor_pedtype 6 model 280 in_car 71@ driverseat
+            0175: set_car 71@ Z_angle_to 158.0
+            0397: enable_car 71@ siren 1
+            00A8: set_car 71@ to_psycho_driver
+            00AD: set_car 71@ max_speed_to 60.0
+            04BA: set_car 71@ speed_to 60.0                 
+            05F1: set_car 71@ follow_car 30@ keep_9o_clock
+
+            99@ = 5
+        end
+    end
+    
+    // Checkpoint #6
+    if
+        99@ == 5
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -887.9 -1771.4 radius 5.0 5.0
+        then
+            99@ = 6
+        end
+    end
+    
+    // Checkpoint #7
+    if
+        99@ == 6
+    then
+        if
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -859.7 -1830.4 radius 5.0 5.0
+        then
+            00A5: 72@ = create_car 599 at -814.1 -1785.4 92.4
+            0129: 75@ = create_actor_pedtype 6 model 280 in_car 72@ driverseat
+            0175: set_car 72@ Z_angle_to 150.0
+            0397: enable_car 72@ siren 1
+            00A8: set_car 72@ to_psycho_driver
+            00AD: set_car 72@ max_speed_to 70.0
+            04BA: set_car 72@ speed_to 60.0
+            00A7: car 72@ drive_to -859.2 -1865.7 89.6    
+            
+            99@ = 7
+        end
+    end
+    
+    // Checkpoint #8
+    if
+        99@ == 7
+    then
+        if or
+            00EC:   actor $PLAYER_ACTOR sphere 1 near_point -823.4 -1842.4 radius 5.0 5.0
+            00EC:   actor $PLAYER_ACTOR sphere 0 near_point -823.4 -1842.4 radius 10.0 10.0
+        then
+            99@ = 8
+            break
+        end
+    end
+end
+
+
+
+// ======== Scenka #8 - Finalowa scenka - samochod spada do doliny, a gracz wyskakuje i lapie sie krawedzi skaly ========
+02A3: enable_widescreen 1
+01B4: set_player $PLAYER_CHAR can_move 0
+039E: set_actor $PLAYER_ACTOR locked 0 while_in_car  
+01B9: set_actor $PLAYER_ACTOR armed_weapon_to 0  
+
+0110: clear_player $PLAYER_CHAR wanted_level
+
+0395: clear_area 1 at -839.3 -1833.7 91.7 radius 15.0
+0362: remove_actor $PLAYER_ACTOR from_car_and_place_at -903.6 -1927.4 38.7 // na razie odstawiamy gracza gdzies obok, zeby nie bylo go widac
+
+// Muzyka
+0AAC: 0@ = load_audiostream "CLEO\INE\audio\music\hisboyelroy_-_revolve.mp3"
+//
+
+// Kamera
+015F: set_camera_position -808.0 -1858.5 90.8 rotation 0.0 0.0 0.0
+0160: set_camera_point_at -823.4 -1842.4 90.0 switchstyle 2
+//02EB: restore_camera_with_jumpcut
+//
+
+00AB: put_car 30@ at -839.3 -1833.7 91.7
+0175: set_car 30@ Z_angle_to 240.0
+0224: set_car 30@ health_to 1000
+00AD: set_car 30@ max_speed_to 50.0
+04BA: set_car 30@ speed_to 32.0
+
+05D6: clear_scmpath
+05D7: add_point_to_scmpath -823.4 -1842.4 90.0
+05D7: add_point_to_scmpath -817.1 -1845.8 87.8
+05D7: add_point_to_scmpath -745.3 -1875.4 8.8
+
+// Ustawienie radiowozow
+00AB: put_car 70@ at -847.7 -1858.6 90.6
+0175: set_car 70@ Z_angle_to 294.0
+00AD: set_car 70@ max_speed_to 0.0
+0687: clear_actor 73@ task
+
+00AB: put_car 71@ at -834.3 -1843.0 92.1
+0175: set_car 71@ Z_angle_to 184.0
+00AD: set_car 71@ max_speed_to 0.0
+0687: clear_actor 74@ task
+
+00AB: put_car 72@ at -833.4 -1830.8 92.2
+0175: set_car 72@ Z_angle_to 204.0
+00AD: set_car 72@ max_speed_to 0.0
+0687: clear_actor 75@ task
+//
+
+// Troche matematyki - chcemy uzyskac wektor o dlugosci 0.6 (jako predkosc auta) odchylony o 240 stopni (obrot pojazdu)
+{
+02F6: 5@ = sine 240.0
+5@ *= 0.6                 // predkosc na osi X
+
+02F7: 6@ = cosine 240.0
+6@ *= 0.6                 // predkosc na osi Y
+}
+
+//07D5: set_car 30@ velocity_in_direction_XYZ 5@ 6@ 0.0 rotation_velocitiesXY 0.0 0.0 unk 0.0
+//06BB: set_actor $PLAYER_ACTOR drive_car 30@ speed 40.0 along_SCM_path
+
+while true
+    wait 0
+    if
+        01AD:   car 30@ sphere 0 near_point -810.3 -1850.0 86.7 radius 3.0 3.0
+    then
+        08A6: set_car 30@ door 2 rotation_to 90.0
+        
+        015F: set_camera_position -818.0 -1849.9 86.8 rotation 0.0 0.0 0.0
+        0160: set_camera_point_at -745.3 -1875.4 8.8 switchstyle 2
+        
+        06C5: release_car 30@ from_path
+        
+        while true
+            wait 0
+            00AA: store_car 30@ position_to 101@ 102@ 103@
+
+            // Jak juz prawie spadnie na ziemie
+            if
+                103@ < 13.0
+            then                    
+                020B: explode_car 30@
+                0948: create_explosion_at 101@ 102@ 103@ type 11 camera_shake 5.0
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 1000
+                    then
+                        fade 0 0
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+
+029B: 20@ = init_object 3260 at -816.4 -1844.1 84.8 // podest dla aktora, zeby nie spadl, kiedy dajemy mu animacje
+0453: set_object 20@ XY_rotation 90.0 0.0 angle 0.0
+
+00A1: put_actor $PLAYER_ACTOR at -816.1 -1844.2 85.3
+0173: set_actor $PLAYER_ACTOR Z_angle_to 78.0
+0687: clear_actor $PLAYER_ACTOR task
+0605: actor $PLAYER_ACTOR perform_animation "CLIMB_idle" IFP "PED" framedelta 4.0 loop 1 lockX 0 lockY 0 lockF 0 time -1 // Pliku ped.ifp nie musimy ladowac
+
+
+32@ = 0
+while true
+    wait 0
+    if
+        32@ > 3000
+    then        
+        fade 1 1
+        //04D7: set_actor $PLAYER_ACTOR locked 1
+        0750: set_object 20@ visibility 0
+        
+        0AAD: set_audiostream 0@ perform_action 1
+        0ABC: set_audiostream 0@ volume 1.0
+        
+        015F: set_camera_position -804.1 -1845.6 72.7 rotation 0.0 0.0 0.0
+        0160: set_camera_point_at -816.3 -1844.1 85.8 switchstyle 2
+        
+        32@ = 0
+        while true
+            wait 0
+            if
+                32@ > 2000
+            then
+                0936: set_camera -804.1 -1845.6 72.7 position_to -802.2 -1844.6 90.6 time 5000 smooth_transition 1
+                0920: point_camera -816.3 -1844.1 85.8 transverse_to -819.7 -1841.8 89.0 time 5000 smooth_transition 1
+                
+                0930: lock_camera_position 1
+                092F: lock_camera_target_point 1
+                
+                32@ = 0
+                while true
+                    wait 0
+                    if
+                        32@ > 6000
+                    then
+                        0936: set_camera -802.2 -1844.6 90.6 position_to -473.8 -1901.6 112.4 time 20000 smooth_transition 1
+                        
+                        32@ = 0
+                        while true
+                            wait 0
+                            if
+                                32@ > 15000
+                            then
+                                fade 0 5000
+                                gosub @Fading
+                                
+                                break
+                            end
+                        end
+                            
+                        break
+                    end
+                end
+                
+                break
+            end
+        end
+        
+        break
+    end
+end
+
+32@ = 0
+40@ = 0 // Przezroczystosc tekstury (0 - niewidoczna)
+while true
+    wait 0
+    if
+        40@ >= 255
+    then
+        break
+    end
+    
+    40@ += 4
+    038D: draw_texture 10 position 250.0 100.0 size 300.0 150.0 RGBA 127 127 127 40@
+end
+
+00BC: show_text_highpriority GXT 'ME3T16' time 8000 flag 1
+
+32@ = 0
+while true
+    wait 0
+    038D: draw_texture 10 position 250.0 100.0 size 300.0 150.0 RGBA 127 127 127 255
+    
+    if
+        32@ > 2000
+    then
+        break
+    end
+end
+
+40@ = 255
+while true
+    wait 0
+    if
+        40@ <= 0
+    then
+        break
+    end
+    
+    40@ -= 4
+    038D: draw_texture 10 position 250.0 100.0 size 300.0 150.0 RGBA 127 127 127 40@
+end
+
+fade 1 500
+
+return
+
+
+:Mission_Cleanup
+if
+	8112:	not wasted_or_busted
+then
+	016A: fade 0 time 5000
+	gosub @Fading
+else
+	while 8256:	  not player $PLAYER_CHAR defined
+		wait 0
+	end
+	016A: fade 0 time 0
+end
+
+0489: set_actor $PLAYER_ACTOR muted 0
+0992: set_player $PLAYER_CHAR weapons_scrollable 1
+0881: set_player $PLAYER_CHAR able_to_shoot_weapons 1
+07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 1
+
+0879: enable_gang_wars 1
+
+// Przywrócenie CJa
+gosub @RestorePlayerState
+
+wait 500
+016A: fade 1 time 1000
+
+00D8: mission_cleanup
+$ONMISSION = 0
+return
+
+:Mission_Failed
+00BA: show_text_styled GXT 'M_FAIL' time 5000 style 1
+
+return
+
+:Mission_Passed
+01E3: show_text_1number_styled GXT 'M_PASS' number 0 time 5000 style 1
+0394: play_music 1
+return
+
+
+:SavePlayerState
+00A0: store_actor $PLAYER_ACTOR position_to 113@ 114@ 115@
+0172: 116@ = actor $PLAYER_ACTOR Z_angle
+077E: get_active_interior_to 117@
+01C0: 112@ = player $PLAYER_CHAR wanted_level
+0226: 118@ = actor $PLAYER_ACTOR health
+04DD: 119@ = actor $PLAYER_ACTOR armour
+
+// Gracz dostaje pe³ny stan zdrowia oraz pancerza
+0653: 0@ = float_stat 24
+0092: 0@ = float 0@ to_integer
+0223: set_actor $PLAYER_ACTOR health_to 0@
+
+0945: get_player $PLAYER_CHAR max_armour_to 0@
+0851: set_actor $PLAYER_ACTOR decrease_health_by 119@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 0@
+
+// Zapis broni
+0@ = 0
+1@ = 1
+
+while 13 > 0@
+	04B8: get_weapon_data_from_actor $PLAYER_ACTOR weapon_group 1@ weapon 120@(0@,13i) ammo 133@(0@,13i) model 146@(0@,13i)
+	0@ += 1
+	1@ += 1
+end
+
+048F: actor $PLAYER_ACTOR remove_weapons
+
+return
+
+
+:RestorePlayerState
+0792: disembark_instantly_actor $PLAYER_ACTOR
+09C7: change_player $PLAYER_CHAR model_to #NULL
+070D: rebuild_player $PLAYER_CHAR
+
+04BB: select_interior 117@
+0860: link_actor $PLAYER_ACTOR to_interior 117@
+03CB: set_rendering_origin_at 113@ 114@ 115@
+
+0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 113@ 114@ 115@
+0173: set_actor $PLAYER_ACTOR Z_angle_to 116@
+02EB: restore_camera_with_jumpcut
+
+010D: set_player $PLAYER_CHAR wanted_level_to 112@
+
+0223: set_actor $PLAYER_ACTOR health_to 118@
+
+// Jako ¿e nie istnieje opcode ustawiajacy iloæ pancerza na konkretna iloæ, musimy najpierw usunaæ pancerz gracza
+// a nastêpnie dodaæ oryginalna wartoæ
+04DD: 0@ = actor $PLAYER_ACTOR armour
+0851: set_actor $PLAYER_ACTOR decrease_health_by 0@ affect_armour 1
+035F: actor $PLAYER_ACTOR armour += 119@
+
+// Przywrócenie broni
+048F: actor $PLAYER_ACTOR remove_weapons
+0@ = 0
+
+while 13 > 0@
+	if
+		not 120@(0@,13i) == 0
+	then
+		0247: load_model 146@(0@,13i)
+		038B: load_requested_models
+
+		01B2: give_actor $PLAYER_ACTOR weapon 120@(0@,13i) ammo 133@(0@,13i)
+
+		0249: release_model 146@(0@,13i)
+	end
+	0@ += 1
+end
+
+return
+
+
+:NewPlayerInit
+//07B4: set_player $PLAYER_CHAR gang_recruitment_enabled 0
+//0879: enable_gang_wars 0
+return
+
+
+:Fading
+wait  0
+if
+  816B:    not  fading  
+jf  @Fading
+return
